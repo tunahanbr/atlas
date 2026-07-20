@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Loader2, Mail, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -49,9 +50,20 @@ const TABS: Record<string, LeadStatus[]> = {
   archived: ["ARCHIVED"],
 };
 
-export function LeadsInbox({ leads }: { leads: Lead[] }) {
+export function LeadsInbox({ leads, username }: { leads: Lead[]; username: string }) {
   const [tab, setTab] = useState("pipeline");
   const visible = leads.filter((lead) => TABS[tab]?.includes(lead.status));
+  const emptyCopy =
+    tab === "pipeline"
+      ? {
+          title: "No conversations yet",
+          description: "Your contact form is ready. Open the public profile to check the journey, then share the link where clients already find you.",
+        }
+      : tab === "won"
+        ? { title: "No won work yet", description: "Qualified leads you mark as won will collect here." }
+        : tab === "lost"
+          ? { title: "Nothing lost", description: "Leads you decide not to pursue will collect here." }
+          : { title: "Archive is empty", description: "Old conversations can be moved here without deleting their context." };
 
   return (
     <>
@@ -65,11 +77,21 @@ export function LeadsInbox({ leads }: { leads: Lead[] }) {
       </Tabs>
 
       {visible.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center gap-2 rounded-xl border border-dashed py-16 text-center">
-          <p className="font-medium">No leads here</p>
+        <div className="mt-6 flex flex-col items-center gap-2 rounded-md bg-card/35 px-6 py-14 text-center">
+          <p className="font-editorial text-lg">{emptyCopy.title}</p>
           <p className="max-w-sm text-sm text-muted-foreground">
-            Move leads through the pipeline to keep your client work organized.
+            {emptyCopy.description}
           </p>
+          {tab === "pipeline" ? (
+            <Button
+              render={<Link href={`/${username}#contact`} target="_blank" />}
+              nativeButton={false}
+              variant="outline"
+              className="mt-4"
+            >
+              Preview the inquiry flow
+            </Button>
+          ) : null}
         </div>
       ) : (
         <ul className="mt-6 space-y-3">

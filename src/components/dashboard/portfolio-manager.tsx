@@ -84,21 +84,23 @@ export function PortfolioManager({ projects }: { projects: Project[] }) {
 
   return (
     <>
-      <div className="flex justify-end">
-        <Button onClick={openNew}>
-          <Plus className="size-4" />
-          New project
-        </Button>
-      </div>
+      {projects.length > 0 ? (
+        <div className="flex justify-end">
+          <Button onClick={openNew}>
+            <Plus className="size-4" />
+            Add project
+          </Button>
+        </div>
+      ) : null}
 
       {projects.length === 0 ? (
         <EmptyState
-          title="No projects yet"
-          description="Your work is your proof. Add projects with outcomes, not just screenshots."
+          title="Show the outcome, not only the artifact"
+          description="One strong case study is enough to start. Explain the situation, your contribution and what changed because of the work."
         >
           <Button onClick={openNew} variant="outline">
             <Plus className="size-4" />
-            Add your first project
+            Write your first case study
           </Button>
         </EmptyState>
       ) : (
@@ -136,11 +138,11 @@ export function PortfolioManager({ projects }: { projects: Project[] }) {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-h-[calc(100svh-2rem)] max-w-lg overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit project" : "New project"}</DialogTitle>
             <DialogDescription>
-              Lead with the outcome. Clients buy results, not tech stacks.
+              Lead with what changed. The tools are supporting evidence, not the story.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -229,7 +231,7 @@ export function PortfolioManager({ projects }: { projects: Project[] }) {
                 Published
               </label>
             </div>
-            <Button type="submit" className="w-full rounded-xl" disabled={pending}>
+            <Button type="submit" className="w-full" disabled={pending}>
               {pending ? <Loader2 className="size-4 animate-spin" /> : null}
               {editing ? "Save changes" : "Create project"}
             </Button>

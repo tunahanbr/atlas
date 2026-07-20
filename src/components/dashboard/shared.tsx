@@ -102,7 +102,7 @@ export function EmptyState({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="hairline flex flex-col items-center gap-2 border-y py-16 text-center">
+    <div className="flex flex-col items-center gap-2 rounded-md bg-card/35 px-6 py-14 text-center">
       <p className="font-editorial text-lg">{title}</p>
       <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
       {children ? <div className="mt-4">{children}</div> : null}

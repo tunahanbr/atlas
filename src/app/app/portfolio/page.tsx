@@ -21,7 +21,7 @@ export default async function PortfolioPage() {
     <>
       <PageHeader
         title="Portfolio"
-        description="Case studies that prove you can deliver. Featured projects appear first on your profile."
+        description="Use outcomes and context to show how you think — not only what you shipped."
       />
       <PortfolioManager projects={profile.projects} />
     </>

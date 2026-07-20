@@ -21,12 +21,11 @@ export default async function AppearancePage() {
     <>
       <PageHeader
         title="Appearance"
-        description="The default color scheme visitors see when they open your profile."
+        description="Choose the atmosphere visitors enter. They can still override it with the theme toggle."
       />
       <ThemePicker current={profile.theme} />
       <p className="mt-6 text-sm text-muted-foreground">
-        Custom themes and accent colors are on the roadmap — the theme system is
-        designed to support them without migration.
+        System is the most considerate default: it follows each visitor&apos;s device preference.
       </p>
     </>
   );

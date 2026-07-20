@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
-import { ArrowLeft, FolderGit2, Globe } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, FolderGit2, Globe } from "lucide-react";
 
 import { getProjectBySlug } from "@/server/queries";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/profile/reveal";
 import { AnalyticsPageView } from "@/components/profile/analytics-tracker";
+import { ProfileNav } from "@/components/profile/profile-nav";
+import { ProfileTheme } from "@/components/profile/profile-theme";
 
 type Props = { params: Promise<{ username: string; slug: string }> };
 
@@ -40,52 +42,70 @@ export default async function ProjectPage({ params }: Props) {
   const profileBasePath = customHost ? "" : `/${project.profile.username}`;
 
   const ownerName = project.profile.user.name ?? project.profile.username;
+  const contactHref = `${profileBasePath || "/"}#contact`;
+  const workHref = `${profileBasePath || "/"}#work`;
+  const profileTheme =
+    project.profile.theme === "light" || project.profile.theme === "dark"
+      ? project.profile.theme
+      : "system";
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+    <>
+      <ProfileTheme defaultTheme={profileTheme} />
+      <ProfileNav
+        name={ownerName}
+        links={[{ href: workHref, label: "All work" }]}
+        contactHref={contactHref}
+      />
       <AnalyticsPageView
         username={project.profile.username}
         event="PROJECT_VIEW"
         pageKey={`project:${project.id}`}
       />
-      <Reveal>
-        <Button
-          render={<Link href={`${profileBasePath || "/"}#work`} />}
-          nativeButton={false}
-          variant="ghost"
-          size="sm"
-          className="-ml-2 text-muted-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          {ownerName}
-        </Button>
-      </Reveal>
+      <main className="mx-auto w-full max-w-3xl flex-1 px-5 pt-28 pb-16 sm:px-6 sm:pt-32">
+        <article>
+          <Reveal>
+            <Link
+              href={workHref}
+              className="group inline-flex items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
+              Back to selected work
+            </Link>
+          </Reveal>
 
-      <Reveal delay={0.05}>
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight text-balance">
-            {project.title}
-          </h1>
-          {project.year ? (
-            <span className="text-sm tabular-nums text-muted-foreground">{project.year}</span>
-          ) : null}
-        </div>
-        <p className="mt-3 text-lg leading-relaxed text-muted-foreground text-pretty">
-          {project.summary}
-        </p>
-      </Reveal>
+          <Reveal delay={0.05}>
+            <header className="mt-10 grid gap-5 sm:grid-cols-[1fr_auto] sm:items-start">
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                  Case study
+                </p>
+                <h1 className="font-editorial mt-3 text-[2.35rem] leading-[1.02] tracking-[-0.035em] text-balance sm:text-[3rem]">
+                  {project.title}
+                </h1>
+                <p className="mt-5 max-w-2xl text-base leading-[1.75] text-quiet text-pretty sm:text-lg">
+                  {project.summary}
+                </p>
+              </div>
+              {project.year ? (
+                <span className="font-editorial pt-7 text-sm italic tabular-nums text-muted-foreground">
+                  {project.year}
+                </span>
+              ) : null}
+            </header>
+          </Reveal>
 
       <Reveal delay={0.1}>
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-8 flex flex-wrap gap-3">
           {project.liveUrl ? (
             <Button
               render={<Link href={project.liveUrl} target="_blank" rel="noopener noreferrer" />}
               nativeButton={false}
               variant="outline"
-              className="rounded-xl"
             >
               <Globe className="size-4" />
               Live demo
+              <ArrowUpRight className="size-3.5" />
             </Button>
           ) : null}
           {project.repoUrl ? (
@@ -93,7 +113,6 @@ export default async function ProjectPage({ params }: Props) {
               render={<Link href={project.repoUrl} target="_blank" rel="noopener noreferrer" />}
               nativeButton={false}
               variant="outline"
-              className="rounded-xl"
             >
               <FolderGit2 className="size-4" />
               Source
@@ -104,7 +123,7 @@ export default async function ProjectPage({ params }: Props) {
 
       {project.videoUrl ? (
         <Reveal delay={0.15}>
-          <div className="mt-10 aspect-video overflow-hidden rounded-xl border">
+          <div className="mt-12 aspect-video overflow-hidden rounded-md bg-card">
             <video src={project.videoUrl} controls className="size-full object-cover" />
           </div>
         </Reveal>
@@ -112,9 +131,9 @@ export default async function ProjectPage({ params }: Props) {
 
       {project.description ? (
         <Reveal delay={0.15}>
-          <div className="mt-10 space-y-4">
+          <div className="mt-12 max-w-2xl space-y-5">
             {project.description.split(/\n\s*\n/).map((paragraph, i) => (
-              <p key={i} className="leading-relaxed text-muted-foreground text-pretty">
+              <p key={i} className="font-editorial text-lg leading-[1.7] text-quiet text-pretty first:text-foreground">
                 {paragraph}
               </p>
             ))}
@@ -124,9 +143,9 @@ export default async function ProjectPage({ params }: Props) {
 
       {project.technologies.length > 0 ? (
         <Reveal delay={0.2}>
-          <ul className="mt-10 flex flex-wrap gap-1.5">
+          <ul className="mt-10 flex flex-wrap gap-x-4 gap-y-2">
             {project.technologies.map((tech) => (
-              <li key={tech} className="rounded-md bg-secondary px-2.5 py-1 text-xs">
+              <li key={tech} className="text-xs text-muted-foreground before:mr-2 before:content-['·']">
                 {tech}
               </li>
             ))}
@@ -135,19 +154,22 @@ export default async function ProjectPage({ params }: Props) {
       ) : null}
 
       <Reveal delay={0.25}>
-        <div className="mt-14 rounded-xl border bg-card p-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            Interested in work like this?
-          </p>
+        <div className="mt-16 rounded-md bg-card/50 p-7 sm:flex sm:items-center sm:justify-between sm:gap-8 sm:text-left">
+          <div>
+            <p className="font-editorial text-xl">Have a similar challenge?</p>
+            <p className="mt-1 text-sm text-muted-foreground">Share the context and get a thoughtful first reply.</p>
+          </div>
           <Button
-            render={<Link href={`${profileBasePath || "/"}#contact`} />}
+            render={<Link href={contactHref} />}
             nativeButton={false}
-            className="mt-3 rounded-xl"
+            className="mt-5 sm:mt-0"
           >
-            Work with {ownerName.split(" ")[0]}
+            Talk to {ownerName.split(" ")[0]}
           </Button>
         </div>
       </Reveal>
-    </main>
+        </article>
+      </main>
+    </>
   );
 }

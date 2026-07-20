@@ -88,15 +88,22 @@ export default async function ProfilePage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
-      <ProfileNav name={name} />
+      <ProfileNav
+        name={name}
+        links={[
+          ...(profile.projects.length > 0 ? [{ href: "#work", label: "Work" }] : []),
+          ...(profile.services.length > 0 ? [{ href: "#services", label: "Services" }] : []),
+          ...(profile.bio || profile.skills.length > 0 ? [{ href: "#about", label: "About" }] : []),
+        ]}
+      />
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 sm:px-6">
         <Hero profile={profile} />
-        <Services username={profile.username} services={profile.services} />
         <Projects
           username={profile.username}
           basePath={profileBasePath}
           projects={profile.projects}
         />
+        <Services username={profile.username} services={profile.services} />
         <Testimonials testimonials={profile.testimonials} />
         <Experience experiences={profile.experiences} />
         <About profile={profile} />

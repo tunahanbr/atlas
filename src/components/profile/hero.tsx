@@ -10,6 +10,13 @@ import { initials } from "@/lib/format";
 
 export function Hero({ profile }: { profile: PublicProfile }) {
   const name = profile.user.name ?? profile.username;
+  const hasWork = profile.projects.length > 0;
+  const primaryLabel =
+    profile.availability === "AVAILABLE"
+      ? "Tell me about your project"
+      : profile.availability === "LIMITED"
+        ? "Check my availability"
+        : "Send a future inquiry";
 
   return (
     <header id="top" className="scroll-mt-20 pt-28 pb-16 sm:pt-36 sm:pb-20">
@@ -67,10 +74,14 @@ export function Hero({ profile }: { profile: PublicProfile }) {
           <Reveal delay={0.15}>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button render={<a href="#contact" />} nativeButton={false} size="lg">
-                Start a project
+                {primaryLabel}
                 <ArrowDownRight className="size-4" />
               </Button>
-              {profile.bookingUrl ? (
+              {hasWork ? (
+                <Button render={<a href="#work" />} nativeButton={false} variant="outline" size="lg">
+                  View selected work
+                </Button>
+              ) : profile.bookingUrl ? (
                 <Button
                   render={
                     <Link href={profile.bookingUrl} target="_blank" rel="noopener noreferrer" />
@@ -84,6 +95,19 @@ export function Hero({ profile }: { profile: PublicProfile }) {
                 </Button>
               ) : null}
             </div>
+            {hasWork && profile.bookingUrl ? (
+              <p className="mt-4 text-xs text-muted-foreground">
+                Prefer a conversation?{" "}
+                <Link
+                  href={profile.bookingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border-b border-foreground/25 pb-0.5 text-foreground transition-colors hover:border-foreground"
+                >
+                  Book a short call
+                </Link>
+              </p>
+            ) : null}
           </Reveal>
         </div>
       </div>

@@ -57,17 +57,19 @@ export function TestimonialsManager({ testimonials }: { testimonials: Testimonia
 
   return (
     <>
-      <div className="flex justify-end">
-        <Button onClick={openNew}>
-          <Plus className="size-4" />
-          New testimonial
-        </Button>
-      </div>
+      {testimonials.length > 0 ? (
+        <div className="flex justify-end">
+          <Button onClick={openNew}>
+            <Plus className="size-4" />
+            Add testimonial
+          </Button>
+        </div>
+      ) : null}
 
       {testimonials.length === 0 ? (
         <EmptyState
-          title="No testimonials yet"
-          description="Social proof is the strongest conversion signal on your profile. Ask your last three clients for two sentences each."
+          title="Let a client answer the trust question"
+          description="Ask one recent client what changed, what felt different and why they would work with you again. Specific beats polished."
         >
           <Button onClick={openNew} variant="outline">
             <Plus className="size-4" />
@@ -104,11 +106,11 @@ export function TestimonialsManager({ testimonials }: { testimonials: Testimonia
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-h-[calc(100svh-2rem)] max-w-lg overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit testimonial" : "New testimonial"}</DialogTitle>
             <DialogDescription>
-              Specific outcomes beat generic praise. “Increased conversion 18%” &gt; “Great to work with”.
+              A concrete outcome or observation is more credible than generic praise.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -134,7 +136,7 @@ export function TestimonialsManager({ testimonials }: { testimonials: Testimonia
               <Switch name="published" defaultChecked={editing?.published ?? true} />
               Published
             </label>
-            <Button type="submit" className="w-full rounded-xl" disabled={pending}>
+            <Button type="submit" className="w-full" disabled={pending}>
               {pending ? <Loader2 className="size-4 animate-spin" /> : null}
               {editing ? "Save changes" : "Add testimonial"}
             </Button>

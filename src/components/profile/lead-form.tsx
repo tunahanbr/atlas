@@ -26,9 +26,9 @@ export function LeadForm({ username }: { username: string }) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-md bg-card/50 py-12 text-center">
         <CheckCircle2 className="size-8 text-success" />
-        <p className="font-medium">Message sent</p>
+        <p className="font-editorial text-xl">Your note is on its way</p>
         <p className="max-w-sm text-sm text-muted-foreground">
-          Thanks for reaching out. You&apos;ll hear back within 1–2 business days.
+          Thanks for the context. You&apos;ll hear back within 1–2 business days.
         </p>
       </div>
     );
@@ -37,7 +37,19 @@ export function LeadForm({ username }: { username: string }) {
   const errors = state.status === "error" ? state.errors : {};
 
   return (
-    <form action={action} className="rounded-md bg-card/45 p-6 sm:p-8">
+    <div>
+      <div className="mb-7 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+        <div>
+          <h3 className="font-editorial text-2xl tracking-[-0.02em]">Start with a little context.</h3>
+          <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+            A few concrete details make the first reply much more useful. No polished brief needed.
+          </p>
+        </div>
+        <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+          Usually replies in 1–2 days
+        </p>
+      </div>
+      <form action={action} className="rounded-md bg-card/45 p-6 sm:p-8">
       <input type="hidden" name="username" value={username} />
       <div className="absolute -left-[10000px] size-px overflow-hidden" aria-hidden="true">
         <label htmlFor="lead-contact-url">Leave this field empty</label>
@@ -82,24 +94,25 @@ export function LeadForm({ username }: { username: string }) {
         </Select>
       </div>
       <div className="mt-4 space-y-1.5">
-        <Label htmlFor="lead-message">Project details</Label>
+          <Label htmlFor="lead-message">What are you trying to change?</Label>
         <Textarea
           id="lead-message"
           name="message"
           rows={5}
-          placeholder="What are you building, what does success look like, and when do you need it?"
+          placeholder="The situation today, the outcome you want, and any timing that matters."
           required
         />
         {errors.message ? <FieldError message={errors.message[0]} /> : null}
       </div>
       <Button type="submit" size="lg" className="mt-6 w-full" disabled={pending}>
         {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-        Send inquiry
+        Send project brief
       </Button>
       <p className="mt-3 text-center text-[11px] text-muted-foreground">
-        Goes directly to the owner — no middleman, no fees.
+        Direct to the profile owner. Your details are never shared.
       </p>
-    </form>
+      </form>
+    </div>
   );
 }
 

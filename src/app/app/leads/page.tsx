@@ -11,11 +11,18 @@ export default async function LeadsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const leads = await db.lead.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    include: { notes: { orderBy: { createdAt: "desc" } } },
-  });
+  const [leads, profile] = await Promise.all([
+    db.lead.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      include: { notes: { orderBy: { createdAt: "desc" } } },
+    }),
+    db.profile.findUnique({
+      where: { userId: session.user.id },
+      select: { username: true },
+    }),
+  ]);
+  if (!profile) redirect("/setup");
 
   return (
     <>
@@ -23,7 +30,7 @@ export default async function LeadsPage() {
         title="Leads"
         description="Qualify inquiries, schedule follow-ups and keep the full client context in one place."
       />
-      <LeadsInbox leads={leads} />
+      <LeadsInbox leads={leads} username={profile.username} />
     </>
   );
 }

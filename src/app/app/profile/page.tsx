@@ -30,8 +30,8 @@ export default async function ProfilePage() {
   return (
     <>
       <PageHeader
-        title="Profile"
-        description="Your public identity. Everything here appears on your profile page."
+        title="Profile story"
+        description="Make it easy to understand who you help, how you work and why visitors should trust you."
       />
       <div className="space-y-6">
         <ProfileForm

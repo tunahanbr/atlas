@@ -21,7 +21,7 @@ export default async function ServicesPage() {
     <>
       <PageHeader
         title="Services"
-        description="Productized services with transparent pricing. They appear in the Services section of your profile."
+        description="Turn repeat client problems into offers people can understand before the first call."
       />
       <ServicesManager services={profile.services} />
     </>

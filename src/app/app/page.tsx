@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Inbox } from "lucide-react";
+import { ArrowRight, Inbox } from "lucide-react";
 
 import { auth } from "@/auth";
 import { db } from "@/server/db";
@@ -7,10 +7,15 @@ import { getProfileCompleteness } from "@/server/queries";
 import { PageHeader } from "@/components/dashboard/shared";
 import { Button } from "@/components/ui/button";
 import { redirect } from "next/navigation";
+import { ProfileLaunchPanel } from "@/components/dashboard/profile-launch-panel";
 
 export const metadata = { title: "Overview" };
 
-export default async function OverviewPage() {
+export default async function OverviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ welcome?: string }>;
+}) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -32,6 +37,7 @@ export default async function OverviewPage() {
     }),
   ]);
   if (!profile || !completeness) redirect("/setup");
+  const isWelcome = (await searchParams).welcome === "1";
 
   const firstName = (session.user.name ?? "").split(" ")[0];
 
@@ -45,27 +51,69 @@ export default async function OverviewPage() {
       href: "/app/testimonials",
     },
   ];
+  const remaining = completeness.checks.filter((check) => !check.done);
+  const nextCheck = remaining[0];
+  const checkHref = (id: string) =>
+    id === "service"
+      ? "/app/services"
+      : id === "project"
+        ? "/app/portfolio"
+        : id === "testimonial"
+          ? "/app/testimonials"
+          : "/app/profile";
 
   return (
     <>
       <PageHeader
         title={`Welcome back${firstName ? `, ${firstName}` : ""}`}
-        description="Here's the state of your professional presence."
-      >
-        <Button
-          render={<Link href={`/${profile.username}`} target="_blank" />}
-          nativeButton={false}
-          variant="outline"
-        >
-          <ArrowUpRight className="size-4" />
-          View public profile
-        </Button>
-      </PageHeader>
+        description="Your public page, conversations and next useful step in one place."
+      />
+
+      <ProfileLaunchPanel profilePath={`/${profile.username}`} isWelcome={isWelcome} />
+
+      {!completeness.complete && nextCheck ? (
+        <section className="mt-6 rounded-md bg-card/45 p-6 sm:flex sm:items-start sm:justify-between sm:gap-8">
+          <div className="max-w-xl">
+            <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Recommended next step
+            </p>
+            <h2 className="font-editorial mt-2 text-xl">{nextCheck.label}</h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+              {nextCheck.id === "avatar"
+                ? "A recognizable photo makes an otherwise new profile feel immediately more trustworthy."
+                : nextCheck.id === "headline"
+                  ? "Explain the outcome you create, not only your job title."
+                  : nextCheck.id === "bio"
+                    ? "Give visitors enough context to understand how you think and work."
+                    : nextCheck.id === "service"
+                      ? "Turn one common client problem into a clear offer with scope and pricing."
+                      : nextCheck.id === "project"
+                        ? "Show one outcome you created. Proof makes every other claim easier to believe."
+                        : nextCheck.id === "testimonial"
+                          ? "A specific client quote answers the trust question you cannot answer yourself."
+                          : "Give visitors one place where they can verify more of your work."}
+            </p>
+            {remaining.length > 1 ? (
+              <p className="mt-4 text-xs text-muted-foreground">
+                {remaining.length - 1} more {remaining.length - 1 === 1 ? "step" : "steps"} after this
+              </p>
+            ) : null}
+          </div>
+          <Button
+            render={<Link href={checkHref(nextCheck.id)} />}
+            nativeButton={false}
+            className="mt-5 sm:mt-0"
+          >
+            Continue setup
+            <ArrowRight className="size-4" />
+          </Button>
+        </section>
+      ) : null}
 
       {!completeness.complete ? (
-        <section className="mt-6 rounded-md bg-card/45 p-6">
+        <section className="mt-3 rounded-md bg-card/25 px-6 py-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-editorial text-lg">Profile completeness</h2>
+            <p className="text-xs font-medium text-muted-foreground">Profile foundation</p>
             <span className="text-sm tabular-nums text-muted-foreground">
               {completeness.done}/{completeness.total}
             </span>
@@ -76,27 +124,18 @@ export default async function OverviewPage() {
               style={{ width: `${(completeness.done / completeness.total) * 100}%` }}
             />
           </div>
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
             {completeness.checks
               .filter((c) => !c.done)
               .slice(0, 3)
               .map((check) => (
                 <li key={check.id}>
                   <Link
-                    href={
-                      check.id === "service"
-                        ? "/app/services"
-                        : check.id === "project"
-                          ? "/app/portfolio"
-                          : check.id === "testimonial"
-                            ? "/app/testimonials"
-                            : "/app/profile"
-                    }
-                    className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    href={checkHref(check.id)}
+                    className="group inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <span className="flex size-4 items-center justify-center rounded-full border" />
                     {check.label}
-                    <ArrowRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                    <ArrowRight className="size-3 opacity-0 transition-opacity group-hover:opacity-100" />
                   </Link>
                 </li>
               ))}
@@ -133,7 +172,7 @@ export default async function OverviewPage() {
           <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
             <Inbox className="size-6 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              No inquiries yet. Share your profile link to get started.
+              No inquiries yet. Your form is live — share the profile where potential clients already know you.
             </p>
           </div>
         ) : (

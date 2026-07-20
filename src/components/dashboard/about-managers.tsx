@@ -122,7 +122,9 @@ export function ExperienceManager({ items }: { items: ExperienceItem[] }) {
         </Button>
       </div>
       {items.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">No experience entries yet.</p>
+        <div className="mt-4 rounded-md bg-background/35 p-4 text-sm text-muted-foreground">
+          Add the roles that explain your point of view today. A complete employment history is not required.
+        </div>
       ) : (
         <ul className="mt-4 divide-y">
           {items.map((item) => (
@@ -240,7 +242,9 @@ export function CertificationsManager({ items }: { items: CertificationItem[] })
         </Button>
       </div>
       {items.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">No certifications yet.</p>
+        <div className="mt-4 rounded-md bg-background/35 p-4 text-sm text-muted-foreground">
+          Optional. Add credentials only when they materially strengthen trust for the work you offer.
+        </div>
       ) : (
         <ul className="mt-4 divide-y">
           {items.map((item) => (

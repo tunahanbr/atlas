@@ -50,9 +50,9 @@ export async function getProfileCompleteness(userId: string) {
   const profile = await db.profile.findUnique({
     where: { userId },
     include: {
-      services: { select: { id: true } },
-      projects: { select: { id: true } },
-      testimonials: { select: { id: true } },
+      services: { where: { published: true }, select: { id: true } },
+      projects: { where: { published: true }, select: { id: true } },
+      testimonials: { where: { published: true }, select: { id: true } },
       socials: { select: { id: true } },
     },
   });

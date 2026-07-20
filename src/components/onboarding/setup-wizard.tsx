@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 
 import { createProfile } from "@/server/actions/profile";
 import { USERNAME_REGEX, RESERVED_USERNAMES } from "@/lib/constants";
@@ -18,6 +18,20 @@ import {
 import { cn } from "@/lib/utils";
 
 const STEPS = ["Username", "Headline", "Availability"] as const;
+const STEP_COPY = [
+  {
+    title: "Choose your public address",
+    description: "Short and easy to say out loud works best.",
+  },
+  {
+    title: "Make your work understandable",
+    description: "Say what you do and who it helps — without a list of tools.",
+  },
+  {
+    title: "Set the right expectation",
+    description: "Visitors should know whether now is a good time to reach out.",
+  },
+] as const;
 
 export function SetupWizard({ defaultName }: { defaultName: string }) {
   const [step, setStep] = useState(0);
@@ -55,41 +69,33 @@ export function SetupWizard({ defaultName }: { defaultName: string }) {
   }
 
   return (
-    <div className="rounded-xl border bg-card p-6">
-      <ol className="mb-6 flex items-center gap-2">
+    <div className="rounded-md bg-card/60 p-6 shadow-[0_20px_60px_color-mix(in_oklch,var(--foreground)_6%,transparent)] sm:p-8">
+      <div className="flex items-center justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+        <span>Step {step + 1} of {STEPS.length}</span>
+        <span>{STEPS[step]}</span>
+      </div>
+      <div className="mt-3 flex gap-1" aria-hidden="true">
         {STEPS.map((label, i) => (
-          <li key={label} className="flex items-center gap-2">
-            <span
-              className={cn(
-                "flex size-6 items-center justify-center rounded-full text-xs font-medium",
-                i < step
-                  ? "bg-success text-white"
-                  : i === step
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground",
-              )}
-            >
-              {i < step ? <Check className="size-3.5" /> : i + 1}
-            </span>
-            <span
-              className={cn(
-                "text-xs",
-                i === step ? "font-medium" : "text-muted-foreground",
-              )}
-            >
-              {label}
-            </span>
-            {i < STEPS.length - 1 ? (
-              <span className="mx-1 h-px w-6 bg-border" aria-hidden />
-            ) : null}
-          </li>
+          <span
+            key={label}
+            className={cn(
+              "h-1 flex-1 rounded-full transition-colors duration-500",
+              i <= step ? "bg-brand" : "bg-muted",
+            )}
+          />
         ))}
-      </ol>
+      </div>
+      <h2 className="font-editorial mt-7 text-2xl tracking-[-0.02em]">
+        {STEP_COPY[step].title}
+      </h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        {STEP_COPY[step].description}
+      </p>
 
       {step === 0 ? (
-        <div className="space-y-1.5">
+        <div className="mt-7 space-y-1.5">
           <Label htmlFor="username">Your username</Label>
-          <div className="flex items-center rounded-lg border bg-background focus-within:border-ring">
+          <div className="flex items-center rounded-md border bg-background/50 focus-within:border-ring">
             <span className="pl-3 text-sm text-muted-foreground">atlas.rocks/</span>
             <Input
               id="username"
@@ -107,7 +113,7 @@ export function SetupWizard({ defaultName }: { defaultName: string }) {
       ) : null}
 
       {step === 1 ? (
-        <div className="space-y-4">
+        <div className="mt-7 space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="headline">Headline</Label>
             <Input
@@ -115,6 +121,7 @@ export function SetupWizard({ defaultName }: { defaultName: string }) {
               value={headline}
               onChange={(e) => setHeadline(e.target.value)}
               placeholder="Senior Product Engineer — I build web products"
+              maxLength={120}
               autoFocus
             />
           </div>
@@ -131,7 +138,7 @@ export function SetupWizard({ defaultName }: { defaultName: string }) {
       ) : null}
 
       {step === 2 ? (
-        <div className="space-y-1.5">
+        <div className="mt-7 space-y-1.5">
           <Label htmlFor="availability">Availability</Label>
           <Select
             value={availability}
@@ -149,23 +156,31 @@ export function SetupWizard({ defaultName }: { defaultName: string }) {
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
-            Shown as a badge on your profile. Clients filter by this.
+            This appears beside your intro and can be changed at any time.
           </p>
         </div>
       ) : null}
 
       {error ? <p className="mt-3 text-xs text-destructive">{error}</p> : null}
 
-      <Button
-        onClick={next}
-        disabled={pending || (step === 0 && !username)}
-        className="mt-6 w-full rounded-xl"
-        size="lg"
-      >
-        {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-        {step === STEPS.length - 1 ? "Create my profile" : "Continue"}
-        {!pending && step < STEPS.length - 1 ? <ArrowRight className="size-4" /> : null}
-      </Button>
+      <div className="mt-7 flex items-center gap-3">
+        {step > 0 ? (
+          <Button type="button" variant="ghost" size="lg" onClick={() => setStep(step - 1)}>
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+        ) : null}
+        <Button
+          onClick={next}
+          disabled={pending || (step === 0 && !username)}
+          className="flex-1"
+          size="lg"
+        >
+          {pending ? <Loader2 className="size-4 animate-spin" /> : null}
+          {step === STEPS.length - 1 ? "Publish my profile" : "Continue"}
+          {!pending && step < STEPS.length - 1 ? <ArrowRight className="size-4" /> : null}
+        </Button>
+      </div>
     </div>
   );
 }

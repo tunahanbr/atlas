@@ -77,21 +77,23 @@ export function ServicesManager({ services }: { services: Service[] }) {
 
   return (
     <>
-      <div className="flex justify-end">
-        <Button onClick={openNew}>
-          <Plus className="size-4" />
-          New service
-        </Button>
-      </div>
+      {services.length > 0 ? (
+        <div className="flex justify-end">
+          <Button onClick={openNew}>
+            <Plus className="size-4" />
+            Add service
+          </Button>
+        </div>
+      ) : null}
 
       {services.length === 0 ? (
         <EmptyState
-          title="No services yet"
-          description="Productized services with clear pricing convert visitors into clients. Add your first one."
+          title="Turn one repeat request into a clear offer"
+          description="Start with a problem clients already ask you to solve. Give it a concrete outcome, a realistic timeline and a price signal."
         >
           <Button onClick={openNew} variant="outline">
             <Plus className="size-4" />
-            Add your first service
+            Create your first offer
           </Button>
         </EmptyState>
       ) : (
@@ -124,20 +126,20 @@ export function ServicesManager({ services }: { services: Service[] }) {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-h-[calc(100svh-2rem)] max-w-lg overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit service" : "New service"}</DialogTitle>
             <DialogDescription>
-              Clear scope and pricing builds trust and qualifies leads.
+              Make it easy for the right client to recognize their problem and take the next step.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">Offer title</Label>
               <Input id="title" name="title" defaultValue={editing?.title} required maxLength={100} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">What the client gets</Label>
               <Textarea
                 id="description"
                 name="description"
@@ -195,7 +197,7 @@ export function ServicesManager({ services }: { services: Service[] }) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="technologies">Technologies (comma-separated)</Label>
+                <Label htmlFor="technologies">Expertise tags (comma-separated)</Label>
                 <Input
                   id="technologies"
                   name="technologies"
@@ -208,7 +210,7 @@ export function ServicesManager({ services }: { services: Service[] }) {
               <Switch name="published" defaultChecked={editing?.published ?? true} />
               Published
             </label>
-            <Button type="submit" className="w-full rounded-xl" disabled={pending}>
+            <Button type="submit" className="w-full" disabled={pending}>
               {pending ? <Loader2 className="size-4 animate-spin" /> : null}
               {editing ? "Save changes" : "Create service"}
             </Button>

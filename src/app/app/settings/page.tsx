@@ -29,7 +29,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Settings" description="SEO, account and instance configuration." />
+      <PageHeader title="Settings" description="Control how your profile is found, connected and notified." />
 
       <div className="space-y-6">
         <SeoForm seoTitle={profile.seoTitle} seoDescription={profile.seoDescription} />

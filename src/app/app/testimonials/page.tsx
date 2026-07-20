@@ -21,7 +21,7 @@ export default async function TestimonialsPage() {
     <>
       <PageHeader
         title="Testimonials"
-        description="What clients say about working with you. Published testimonials appear on your profile."
+        description="Specific client observations make your work credible before a conversation begins."
       />
       <TestimonialsManager testimonials={profile.testimonials} />
     </>

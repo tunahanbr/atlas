@@ -79,8 +79,9 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-8">
-      <section className="rounded-xl border bg-card p-6">
-        <h2 className="font-medium tracking-tight">Basics</h2>
+      <section className="rounded-md bg-card/45 p-6">
+        <h2 className="font-editorial text-lg">The essentials</h2>
+        <p className="mt-1 text-sm text-muted-foreground">The first things a visitor needs to understand and trust you.</p>
         <div className="mt-4 space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="username">Username</Label>
@@ -98,6 +99,7 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
               placeholder="Senior Product Engineer — I build web products"
               maxLength={120}
             />
+            <p className="text-xs text-muted-foreground">Try: what you help with + who it is for + the outcome.</p>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="bio">Bio</Label>
@@ -123,8 +125,9 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
         </div>
       </section>
 
-      <section className="rounded-xl border bg-card p-6">
-        <h2 className="font-medium tracking-tight">Availability & booking</h2>
+      <section className="rounded-md bg-card/45 p-6">
+        <h2 className="font-editorial text-lg">Availability & next step</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Set an honest expectation before someone writes.</p>
         <div className="mt-4 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -164,9 +167,9 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
         </div>
       </section>
 
-      <section className="rounded-xl border bg-card p-6">
+      <section className="rounded-md bg-card/45 p-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-medium tracking-tight">Social links</h2>
+          <h2 className="font-editorial text-lg">Places that add credibility</h2>
           <Button type="button" variant="outline" size="sm" onClick={addSocial} disabled={socials.length >= 10}>
             <Plus className="size-4" />
             Add link
@@ -181,7 +184,7 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
             {socials.map((social, i) => (
               <li
                 key={i}
-                className="grid grid-cols-[minmax(0,0.65fr)_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:grid-cols-[minmax(0,0.65fr)_minmax(0,1fr)_auto] sm:gap-3"
               >
                 <Input
                   value={social.label}
@@ -189,6 +192,7 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
                   placeholder="GitHub"
                   maxLength={40}
                   aria-label="Label"
+                  className="col-start-1 sm:col-auto"
                 />
                 <Input
                   value={social.url}
@@ -196,8 +200,16 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
                   placeholder="https://github.com/you"
                   type="url"
                   aria-label="URL"
+                  className="col-start-1 sm:col-auto"
                 />
-                <Button type="button" variant="ghost" size="icon" aria-label="Remove" onClick={() => removeSocial(i)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Remove"
+                  onClick={() => removeSocial(i)}
+                  className="col-start-2 row-span-2 row-start-1 sm:col-auto sm:row-auto"
+                >
                   <X className="size-4" />
                 </Button>
               </li>
@@ -206,8 +218,9 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
         )}
       </section>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={pending} className="rounded-xl">
+      <div className="sticky bottom-4 z-20 flex justify-end rounded-md bg-background/88 p-3 shadow-[0_10px_35px_color-mix(in_oklch,var(--foreground)_10%,transparent)] backdrop-blur-md">
+        <p className="mr-auto hidden self-center pl-2 text-xs text-muted-foreground sm:block">Changes appear on your public profile immediately.</p>
+        <Button type="submit" disabled={pending}>
           {pending ? <Loader2 className="size-4 animate-spin" /> : null}
           Save profile
         </Button>

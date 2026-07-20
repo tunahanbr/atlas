@@ -45,7 +45,7 @@ export async function createProfile(input: {
     },
   });
 
-  redirect("/app");
+  redirect("/app?welcome=1");
 }
 
 export async function updateProfile(input: unknown): Promise<ActionResult> {
