@@ -1,0 +1,234 @@
+// Atlas — Prisma schema
+// PostgreSQL. Multi-user capable; self-hosted instances typically run single-tenant.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth.js models ───────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  profile  Profile?
+  leads    Lead[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core domain ──────────────────────────────────────────────────────────────
+
+enum Availability {
+  AVAILABLE
+  LIMITED
+  UNAVAILABLE
+}
+
+model Profile {
+  id               String       @id @default(cuid())
+  userId           String       @unique
+  username         String       @unique
+  headline         String?
+  bio              String?      @db.Text
+  location         String?
+  avatarUrl        String?
+  availability     Availability @default(AVAILABLE)
+  availabilityNote String?
+  bookingUrl       String?
+  website          String?
+  seoTitle         String?
+  seoDescription   String?
+  // Default color scheme visitors see: "system" | "light" | "dark"
+  theme            String       @default("system")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services       Service[]
+  projects       Project[]
+  testimonials   Testimonial[]
+  experiences    Experience[]
+  skills         Skill[]
+  certifications Certification[]
+  socials        SocialLink[]
+}
+
+enum PriceType {
+  FIXED
+  STARTING_AT
+  ON_REQUEST
+}
+
+model Service {
+  id           String    @id @default(cuid())
+  profileId    String
+  title        String
+  description  String    @db.Text
+  priceType    PriceType @default(STARTING_AT)
+  // Stored in minor units (cents) to avoid float money bugs.
+  priceCents   Int?
+  currency     String    @default("USD")
+  deliveryDays Int?
+  technologies String[]
+  published    Boolean   @default(true)
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id           String    @id @default(cuid())
+  profileId    String
+  slug         String
+  title        String
+  summary      String
+  description  String?   @db.Text
+  imageUrl     String?
+  videoUrl     String?
+  repoUrl      String?
+  liveUrl      String?
+  technologies String[]
+  year         Int?
+  featured     Boolean   @default(false)
+  published    Boolean   @default(true)
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, slug])
+}
+
+model Testimonial {
+  id            String   @id @default(cuid())
+  profileId     String
+  authorName    String
+  authorRole    String?
+  authorCompany String?
+  avatarUrl     String?
+  content       String   @db.Text
+  published     Boolean  @default(true)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Experience {
+  id          String    @id @default(cuid())
+  profileId   String
+  company     String
+  role        String
+  description String?   @db.Text
+  startDate   DateTime
+  endDate     DateTime?
+  current     Boolean   @default(false)
+  order       Int       @default(0)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Skill {
+  id        String  @id @default(cuid())
+  profileId String
+  name      String
+  // Free-form grouping, e.g. "Frontend", "Backend", "DevOps", "Design".
+  category  String?
+  order     Int     @default(0)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Certification {
+  id        String  @id @default(cuid())
+  profileId String
+  name      String
+  issuer    String
+  year      Int?
+  url       String?
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model SocialLink {
+  id        String  @id @default(cuid())
+  profileId String
+  label     String // "GitHub", "LinkedIn", "X", ...
+  url       String
+  order     Int     @default(0)
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+// ─── Leads ────────────────────────────────────────────────────────────────────
+
+enum LeadStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
+model Lead {
+  id        String     @id @default(cuid())
+  userId    String
+  name      String
+  email     String
+  budget    String?
+  message   String     @db.Text
+  status    LeadStatus @default(NEW)
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
