@@ -65,6 +65,7 @@ the email-only development login is never registered in a production build.
 | `pnpm build`      | Production build                 |
 | `pnpm lint`       | ESLint                           |
 | `pnpm test`       | Unit tests (vitest)              |
+| `pnpm test:integration` | Database isolation tests   |
 | `pnpm db:migrate` | Apply dev migrations             |
 | `pnpm db:seed`    | Seed demo profile                |
 | `pnpm db:studio`  | Prisma Studio                    |

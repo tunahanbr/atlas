@@ -5,6 +5,8 @@ allowBuilds:
   "@prisma/engines": true
   "@prisma/client": true
   esbuild: true
+overrides:
+  postcss: 8.5.19
 onlyBuiltDependencies:
   - sharp
   - unrs-resolver

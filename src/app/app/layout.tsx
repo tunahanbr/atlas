@@ -23,14 +23,14 @@ export default async function DashboardLayout({
   });
 
   return (
-    <div className="flex min-h-svh">
+    <div className="min-h-svh lg:flex">
       <Sidebar
         username={profile.username}
         newLeads={newLeads}
         userName={session.user.name ?? ""}
         userEmail={session.user.email ?? ""}
       />
-      <main className="flex-1 px-8 py-8 lg:px-12">
+      <main className="px-4 py-6 sm:px-6 lg:flex-1 lg:px-12 lg:py-8">
         <div className="mx-auto w-full max-w-4xl">{children}</div>
       </main>
     </div>

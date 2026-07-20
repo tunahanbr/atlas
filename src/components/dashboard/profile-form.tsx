@@ -179,12 +179,14 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
         ) : (
           <ul className="mt-4 space-y-3">
             {socials.map((social, i) => (
-              <li key={i} className="flex items-center gap-3">
+              <li
+                key={i}
+                className="grid grid-cols-[minmax(0,0.65fr)_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3"
+              >
                 <Input
                   value={social.label}
                   onChange={(e) => updateSocial(i, "label", e.target.value)}
                   placeholder="GitHub"
-                  className="w-36"
                   maxLength={40}
                   aria-label="Label"
                 />

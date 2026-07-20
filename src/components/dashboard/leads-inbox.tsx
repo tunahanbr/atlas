@@ -97,7 +97,7 @@ export function LeadsInbox({ leads }: { leads: Lead[] }) {
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
                 {lead.message}
               </p>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <Button render={<a href={`mailto:${lead.email}`} />} nativeButton={false} size="sm" className="rounded-lg">
                   Reply by email
                 </Button>

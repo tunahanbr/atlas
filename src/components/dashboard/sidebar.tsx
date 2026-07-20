@@ -1,21 +1,31 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Briefcase,
+  ExternalLink,
   FolderKanban,
   Inbox,
   LayoutDashboard,
+  Menu,
   MessageSquareQuote,
   Palette,
   Settings,
   User,
-  ExternalLink,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { SignOutButton } from "./sign-out-button";
 
 const NAV = [
@@ -44,28 +54,79 @@ const NAV = [
   },
 ];
 
-export function Sidebar({
-  username,
-  newLeads,
-  userName,
-  userEmail,
-}: {
+type SidebarProps = {
   username: string;
   newLeads: number;
   userName: string;
   userEmail: string;
-}) {
+};
+
+export function Sidebar(props: SidebarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <>
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-sm lg:hidden">
+        <Link href="/app" className="text-sm font-semibold tracking-tight">
+          Atlas
+        </Link>
+        <div className="flex items-center gap-1">
+          {props.newLeads > 0 ? (
+            <Link
+              href="/app/leads"
+              className="rounded-full bg-brand px-2 py-1 text-xs font-semibold text-brand-foreground"
+              aria-label={`${props.newLeads} new leads`}
+            >
+              {props.newLeads}
+            </Link>
+          ) : null}
+          <ThemeToggle />
+          <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
+            <DialogTrigger
+              render={<Button variant="ghost" size="icon" aria-label="Open navigation" />}
+            >
+              <Menu className="size-5" />
+            </DialogTrigger>
+            <DialogContent
+              className="top-0 left-0 h-svh w-72 max-w-[85vw] -translate-x-0 -translate-y-0 grid-rows-[auto_1fr_auto] gap-0 rounded-none border-0 border-r bg-background p-0"
+            >
+              <DialogTitle className="sr-only">Dashboard navigation</DialogTitle>
+              <DialogDescription className="sr-only">
+                Navigate between Atlas dashboard sections.
+              </DialogDescription>
+              <SidebarContent {...props} onNavigate={() => setMobileOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </div>
+      </header>
+
+      <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col border-r bg-muted/30 lg:flex">
+        <SidebarContent {...props} />
+      </aside>
+    </>
+  );
+}
+
+function SidebarContent({
+  username,
+  newLeads,
+  userName,
+  userEmail,
+  onNavigate,
+}: SidebarProps & { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-0 flex h-svh w-60 shrink-0 flex-col border-r bg-muted/30">
+    <>
       <div className="flex h-14 items-center justify-between px-4">
-        <Link href="/app" className="text-sm font-semibold tracking-tight">
+        <Link href="/app" onClick={onNavigate} className="text-sm font-semibold tracking-tight">
           Atlas
         </Link>
         <Link
           href={`/${username}`}
           target="_blank"
+          rel="noopener noreferrer"
+          onClick={onNavigate}
           className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           View profile
@@ -89,6 +150,7 @@ export function Sidebar({
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      onClick={onNavigate}
                       aria-current={active ? "page" : undefined}
                       className={cn(
                         "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors",
@@ -123,6 +185,6 @@ export function Sidebar({
           <SignOutButton />
         </div>
       </div>
-    </aside>
+    </>
   );
 }

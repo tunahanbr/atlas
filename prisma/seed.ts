@@ -1,9 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type Prisma } from "@prisma/client";
 
 const db = new PrismaClient();
 
 async function main() {
-  const user = await db.user.upsert({
+  await db.$transaction(seedDemo);
+  console.log("Seed complete: profile @lena for user lena@example.com");
+}
+
+async function seedDemo(tx: Prisma.TransactionClient) {
+  const user = await tx.user.upsert({
     where: { email: "lena@example.com" },
     update: {},
     create: {
@@ -13,7 +18,7 @@ async function main() {
     },
   });
 
-  const profile = await db.profile.upsert({
+  const profile = await tx.profile.upsert({
     where: { username: "lena" },
     update: {},
     create: {
@@ -33,7 +38,17 @@ async function main() {
     },
   });
 
-  await db.service.createMany({
+  // Reset only the demo profile's presentation data. Running the seed repeatedly
+  // is deterministic, while leads and account/session data remain untouched.
+  await tx.service.deleteMany({ where: { profileId: profile.id } });
+  await tx.project.deleteMany({ where: { profileId: profile.id } });
+  await tx.testimonial.deleteMany({ where: { profileId: profile.id } });
+  await tx.experience.deleteMany({ where: { profileId: profile.id } });
+  await tx.skill.deleteMany({ where: { profileId: profile.id } });
+  await tx.certification.deleteMany({ where: { profileId: profile.id } });
+  await tx.socialLink.deleteMany({ where: { profileId: profile.id } });
+
+  await tx.service.createMany({
     data: [
       {
         profileId: profile.id,
@@ -74,7 +89,7 @@ async function main() {
     ],
   });
 
-  await db.project.createMany({
+  await tx.project.createMany({
     data: [
       {
         profileId: profile.id,
@@ -140,7 +155,7 @@ async function main() {
     ],
   });
 
-  await db.testimonial.createMany({
+  await tx.testimonial.createMany({
     data: [
       {
         profileId: profile.id,
@@ -172,7 +187,7 @@ async function main() {
     ],
   });
 
-  await db.experience.createMany({
+  await tx.experience.createMany({
     data: [
       {
         profileId: profile.id,
@@ -206,7 +221,7 @@ async function main() {
     ],
   });
 
-  await db.skill.createMany({
+  await tx.skill.createMany({
     data: [
       { profileId: profile.id, name: "TypeScript", category: "Languages", order: 0 },
       { profileId: profile.id, name: "Go", category: "Languages", order: 1 },
@@ -223,7 +238,7 @@ async function main() {
     ],
   });
 
-  await db.certification.createMany({
+  await tx.certification.createMany({
     data: [
       {
         profileId: profile.id,
@@ -240,15 +255,13 @@ async function main() {
     ],
   });
 
-  await db.socialLink.createMany({
+  await tx.socialLink.createMany({
     data: [
       { profileId: profile.id, label: "GitHub", url: "https://github.com/lenahart", order: 0 },
       { profileId: profile.id, label: "LinkedIn", url: "https://linkedin.com/in/lenahart", order: 1 },
       { profileId: profile.id, label: "X", url: "https://x.com/lenahart", order: 2 },
     ],
   });
-
-  console.log("Seed complete: profile @lena for user lena@example.com");
 }
 
 main()
