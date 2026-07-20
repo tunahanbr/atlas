@@ -9,7 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
-export function LoginForm({ hasGitHub }: { hasGitHub: boolean }) {
+export function LoginForm({
+  hasGitHub,
+  devLoginEnabled,
+}: {
+  hasGitHub: boolean;
+  devLoginEnabled: boolean;
+}) {
   const [state, action, pending] = useActionState(signInWithDevLogin, undefined);
 
   return (
@@ -25,7 +31,7 @@ export function LoginForm({ hasGitHub }: { hasGitHub: boolean }) {
         </form>
       ) : null}
 
-      {hasGitHub ? (
+      {hasGitHub && devLoginEnabled ? (
         <div className="flex items-center gap-3">
           <Separator className="flex-1" />
           <span className="text-xs text-muted-foreground">or</span>
@@ -33,36 +39,46 @@ export function LoginForm({ hasGitHub }: { hasGitHub: boolean }) {
         </div>
       ) : null}
 
-      <form action={action} className="space-y-4 rounded-xl border bg-card p-5">
-        {!hasGitHub ? (
+      {devLoginEnabled ? (
+        <form action={action} className="space-y-4 rounded-xl border bg-card p-5">
           <p className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
-            Development login — configure GitHub OAuth in production. Any email
-            creates an account.
+            Development login — any email creates a local development account.
           </p>
-        ) : null}
-        <div className="space-y-1.5">
-          <Label htmlFor="name">Name</Label>
-          <Input id="name" name="name" placeholder="Ada Lovelace" autoComplete="name" />
+          <div className="space-y-1.5">
+            <Label htmlFor="name">Name</Label>
+            <Input id="name" name="name" placeholder="Ada Lovelace" autoComplete="name" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              required
+            />
+          </div>
+          {state?.error ? (
+            <p className="text-xs text-destructive" role="alert">
+              {state.error}
+            </p>
+          ) : null}
+          <Button type="submit" className="w-full rounded-xl" size="lg" disabled={pending}>
+            {pending ? <Loader2 className="size-4 animate-spin" /> : null}
+            Continue
+          </Button>
+        </form>
+      ) : null}
+
+      {!hasGitHub && !devLoginEnabled ? (
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 text-sm">
+          <p className="font-medium">Sign-in is not configured</p>
+          <p className="mt-1 text-muted-foreground">
+            Set AUTH_GITHUB_ID and AUTH_GITHUB_SECRET on this instance, then restart Atlas.
+          </p>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            autoComplete="email"
-            required
-          />
-        </div>
-        {state?.error ? (
-          <p className="text-xs text-destructive">{state.error}</p>
-        ) : null}
-        <Button type="submit" className="w-full rounded-xl" size="lg" disabled={pending}>
-          {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-          Continue
-        </Button>
-      </form>
+      ) : null}
     </div>
   );
 }

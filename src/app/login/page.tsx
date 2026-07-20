@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
+import { auth, isDevLoginEnabled } from "@/auth";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata = { title: "Sign in" };
@@ -23,7 +23,7 @@ export default async function LoginPage() {
           Sign in to manage your professional profile.
         </p>
         <div className="mt-8">
-          <LoginForm hasGitHub={hasGitHub} />
+          <LoginForm hasGitHub={hasGitHub} devLoginEnabled={isDevLoginEnabled} />
         </div>
       </div>
     </main>

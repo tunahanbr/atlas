@@ -9,11 +9,26 @@ export const usernameSchema = z
   .regex(USERNAME_REGEX, "Lowercase letters, numbers and hyphens only")
   .refine((v) => !RESERVED_USERNAMES.has(v), "This username is reserved");
 
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return (url.protocol === "http:" || url.protocol === "https:") && !!url.hostname;
+  } catch {
+    return false;
+  }
+}
+
+const httpUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .refine(isHttpUrl, "Must be a valid HTTP(S) URL");
+
 const urlOrEmpty = z
   .string()
   .trim()
   .max(500)
-  .refine((v) => v === "" || /^https?:\/\/.+/.test(v), "Must be a valid URL")
+  .refine((v) => v === "" || isHttpUrl(v), "Must be a valid HTTP(S) URL")
   .optional();
 
 export const profileSchema = z.object({
@@ -31,7 +46,7 @@ export const profileSchema = z.object({
     .array(
       z.object({
         label: z.string().trim().min(1).max(40),
-        url: z.string().trim().url(),
+        url: httpUrl,
       }),
     )
     .max(10)
@@ -103,7 +118,7 @@ export const certificationSchema = z.object({
 });
 
 export const leadSchema = z.object({
-  username: z.string().trim().min(1),
+  username: usernameSchema,
   name: z.string().trim().min(2, "Please enter your name").max(80),
   email: z.string().trim().email("Please enter a valid email"),
   budget: z.string().trim().max(40).optional().or(z.literal("")),

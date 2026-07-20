@@ -39,6 +39,21 @@ export function LeadForm({ username }: { username: string }) {
   return (
     <form action={action} className="rounded-xl border bg-card p-6">
       <input type="hidden" name="username" value={username} />
+      <div className="absolute -left-[10000px] size-px overflow-hidden" aria-hidden="true">
+        <label htmlFor="lead-contact-url">Leave this field empty</label>
+        <input
+          id="lead-contact-url"
+          name="contact_url"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+      {errors._form ? (
+        <p className="mb-4 text-sm text-destructive" role="alert">
+          {errors._form[0]}
+        </p>
+      ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="lead-name">Name</Label>
@@ -89,5 +104,9 @@ export function LeadForm({ username }: { username: string }) {
 }
 
 function FieldError({ message }: { message: string }) {
-  return <p className="text-xs text-destructive">{message}</p>;
+  return (
+    <p className="text-xs text-destructive" role="alert">
+      {message}
+    </p>
+  );
 }

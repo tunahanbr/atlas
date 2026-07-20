@@ -12,6 +12,10 @@ export async function signInWithDevLogin(
   _prev: { error?: string } | undefined,
   formData: FormData,
 ) {
+  if (process.env.NODE_ENV === "production") {
+    return { error: "Development login is disabled in production." };
+  }
+
   try {
     await signIn("dev-login", {
       email: String(formData.get("email") ?? ""),

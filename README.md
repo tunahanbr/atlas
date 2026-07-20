@@ -46,12 +46,16 @@ email creates an account. For production, create a GitHub OAuth app and set
 
 ```bash
 export AUTH_SECRET=$(openssl rand -base64 32)
+export AUTH_GITHUB_ID=<your-github-oauth-client-id>
+export AUTH_GITHUB_SECRET=<your-github-oauth-client-secret>
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Atlas runs at http://localhost:3000. Database migrations apply automatically
 on container start. Put a reverse proxy (Caddy, nginx, Traefik) with TLS in
-front and set `AUTH_URL` / `NEXT_PUBLIC_APP_URL` to your public URL.
+front, ensure it replaces untrusted forwarding headers, and set `AUTH_URL` /
+`NEXT_PUBLIC_APP_URL` to your public URL. GitHub OAuth is required in production;
+the email-only development login is never registered in a production build.
 
 ## Useful commands
 

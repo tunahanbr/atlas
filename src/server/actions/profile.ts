@@ -125,6 +125,11 @@ export async function updateTheme(
   if (!["system", "light", "dark"].includes(theme)) {
     return { ok: false, error: "Invalid theme" };
   }
-  await db.profile.update({ where: { userId: user.id }, data: { theme } });
+  const profile = await db.profile.update({
+    where: { userId: user.id },
+    data: { theme },
+    select: { username: true },
+  });
+  revalidatePath(`/${profile.username}`);
   return { ok: true };
 }

@@ -232,3 +232,14 @@ model Lead {
 
   @@index([userId, status])
 }
+
+// Atomic, database-backed rate-limit buckets for the public lead form. Keys are
+// salted hashes, so raw client addresses are never persisted.
+model LeadRateLimit {
+  key         String   @id
+  windowStart DateTime @default(now())
+  count       Int      @default(1)
+  updatedAt   DateTime @updatedAt
+
+  @@index([updatedAt])
+}

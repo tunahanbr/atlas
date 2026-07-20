@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { leadSchema, serviceSchema, usernameSchema } from "./validations";
+import { leadSchema, profileSchema, serviceSchema, usernameSchema } from "./validations";
 
 describe("usernameSchema", () => {
   it("accepts valid usernames", () => {
@@ -66,5 +66,35 @@ describe("leadSchema", () => {
 
   it("rejects too-short messages", () => {
     expect(leadSchema.safeParse({ ...valid, message: "hi" }).success).toBe(false);
+  });
+});
+
+describe("profileSchema URLs", () => {
+  const valid = {
+    username: "lena",
+    availability: "AVAILABLE",
+    theme: "system",
+    socials: [],
+  };
+
+  it("accepts HTTP and HTTPS links", () => {
+    expect(
+      profileSchema.safeParse({
+        ...valid,
+        website: "https://example.com/work",
+        socials: [{ label: "GitHub", url: "https://github.com/lena" }],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects executable and non-web URL schemes", () => {
+    for (const url of ["javascript:alert(1)", "data:text/html,test", "file:///tmp/test"]) {
+      expect(
+        profileSchema.safeParse({
+          ...valid,
+          socials: [{ label: "Unsafe", url }],
+        }).success,
+      ).toBe(false);
+    }
   });
 });

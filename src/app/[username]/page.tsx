@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { getProfileByUsername } from "@/server/queries";
+import { serializeJsonLd } from "@/lib/json-ld";
 import { ProfileNav } from "@/components/profile/profile-nav";
 import { Hero } from "@/components/profile/hero";
 import { Services } from "@/components/profile/services";
@@ -12,6 +13,7 @@ import { About } from "@/components/profile/about";
 import { Section } from "@/components/profile/section";
 import { LeadForm } from "@/components/profile/lead-form";
 import { ProfileFooter } from "@/components/profile/profile-footer";
+import { ProfileTheme } from "@/components/profile/profile-theme";
 
 type Props = { params: Promise<{ username: string }> };
 
@@ -46,6 +48,8 @@ export default async function ProfilePage({ params }: Props) {
   if (!profile) notFound();
 
   const name = profile.user.name ?? profile.username;
+  const profileTheme =
+    profile.theme === "light" || profile.theme === "dark" ? profile.theme : "system";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -63,9 +67,10 @@ export default async function ProfilePage({ params }: Props) {
 
   return (
     <>
+      <ProfileTheme defaultTheme={profileTheme} />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
       <ProfileNav name={name} />
       <main className="mx-auto w-full max-w-2xl flex-1 px-6">

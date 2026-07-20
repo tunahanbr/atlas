@@ -7,9 +7,10 @@ import { db } from "@/server/db";
 
 const hasGitHub =
   !!process.env.AUTH_GITHUB_ID && !!process.env.AUTH_GITHUB_SECRET;
+export const isDevLoginEnabled = process.env.NODE_ENV !== "production";
 
 // Development-only login: creates/signs in a user by email without any
-// external provider. Never enabled in production unless explicitly allowed.
+// external provider. It is never registered in production.
 const devCredentials = Credentials({
   id: "dev-login",
   name: "Development login",
@@ -44,9 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }),
         ]
       : []),
-    ...(process.env.NODE_ENV !== "production" || !hasGitHub
-      ? [devCredentials]
-      : []),
+    ...(isDevLoginEnabled ? [devCredentials] : []),
   ],
   pages: {
     signIn: "/login",

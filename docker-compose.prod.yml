@@ -3,7 +3,7 @@
 #   docker compose -f docker-compose.prod.yml up -d --build
 #
 # Then open http://localhost:3000 — migrations run automatically on start.
-# Set AUTH_SECRET and (optionally) AUTH_GITHUB_ID/SECRET before first deploy.
+# Set AUTH_SECRET and AUTH_GITHUB_ID/SECRET before first deploy.
 
 services:
   db:
@@ -32,8 +32,8 @@ services:
       AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in your environment or .env}
       AUTH_URL: ${AUTH_URL:-http://localhost:3000}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-      AUTH_GITHUB_ID: ${AUTH_GITHUB_ID:-}
-      AUTH_GITHUB_SECRET: ${AUTH_GITHUB_SECRET:-}
+      AUTH_GITHUB_ID: ${AUTH_GITHUB_ID:?Set AUTH_GITHUB_ID in your environment or .env}
+      AUTH_GITHUB_SECRET: ${AUTH_GITHUB_SECRET:?Set AUTH_GITHUB_SECRET in your environment or .env}
       AUTH_TRUST_HOST: "true"
     ports:
       - "3000:3000"
