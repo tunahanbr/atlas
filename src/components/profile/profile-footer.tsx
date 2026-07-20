@@ -9,25 +9,25 @@ export function ProfileFooter({
   socials: PublicProfile["socials"];
 }) {
   return (
-    <footer className="border-t py-10">
+    <footer className="hairline border-t py-10 sm:py-12">
       {socials.length > 0 ? (
-        <ul className="flex flex-wrap gap-x-6 gap-y-2">
+        <ul className="flex flex-wrap gap-x-7 gap-y-2">
           {socials.map((social) => (
             <li key={social.id}>
               <Link
                 href={social.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="group inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
                 {social.label}
-                <ArrowUpRight className="size-3.5" />
+                <ArrowUpRight className="size-3.5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </Link>
             </li>
           ))}
         </ul>
       ) : null}
-      <p className="mt-6 text-xs text-muted-foreground">
+      <p className="mt-8 font-editorial text-sm italic text-muted-foreground">
         Powered by{" "}
         <Link
           href="https://github.com"

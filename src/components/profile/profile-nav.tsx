@@ -1,16 +1,23 @@
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
+import { ArrowDownRight } from "lucide-react";
 
 export function ProfileNav({ name }: { name: string }) {
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-6">
-        <span className="text-sm font-medium tracking-tight">{name}</span>
+    <nav className="fixed inset-x-0 top-0 z-50 bg-background/78 backdrop-blur-md">
+      <div className="hairline mx-auto flex h-16 max-w-3xl items-center justify-between border-b px-5 sm:px-6">
+        <a href="#top" className="group inline-flex items-center gap-2.5">
+          <span className="size-1.5 rotate-45 bg-foreground transition-transform duration-500 group-hover:rotate-[225deg]" />
+          <span className="font-editorial text-[15px] tracking-[-0.01em]">{name}</span>
+        </a>
         <div className="flex items-center gap-1">
           <ThemeToggle />
-          <Button render={<a href="#contact" />} nativeButton={false} size="sm" className="rounded-lg">
+          <a
+            href="#contact"
+            className="group ml-2 inline-flex items-center gap-1.5 border-b border-foreground/35 pb-0.5 text-xs font-medium transition-colors hover:border-foreground"
+          >
             Work with me
-          </Button>
+            <ArrowDownRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:translate-y-0.5" />
+          </a>
         </div>
       </div>
     </nav>

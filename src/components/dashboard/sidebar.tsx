@@ -68,9 +68,10 @@ export function Sidebar(props: SidebarProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur-sm lg:hidden">
-        <Link href="/app" className="text-sm font-semibold tracking-tight">
-          Atlas
+      <header className="hairline sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/90 px-4 backdrop-blur-md lg:hidden">
+        <Link href="/app" className="group inline-flex items-center gap-2.5">
+          <span className="size-1.5 rotate-45 bg-foreground transition-transform duration-500 group-hover:rotate-[225deg]" />
+          <span className="font-editorial text-base">Atlas</span>
         </Link>
         <div className="flex items-center gap-1">
           {props.newLeads > 0 ? (
@@ -102,7 +103,7 @@ export function Sidebar(props: SidebarProps) {
         </div>
       </header>
 
-      <aside className="sticky top-0 hidden h-svh w-60 shrink-0 flex-col border-r bg-muted/30 lg:flex">
+      <aside className="hairline sticky top-0 hidden h-svh w-60 shrink-0 flex-col border-r bg-sidebar/80 lg:flex">
         <SidebarContent {...props} />
       </aside>
     </>
@@ -120,9 +121,10 @@ function SidebarContent({
 
   return (
     <>
-      <div className="flex h-14 items-center justify-between px-4">
-        <Link href="/app" onClick={onNavigate} className="text-sm font-semibold tracking-tight">
-          Atlas
+      <div className="flex h-16 items-center justify-between px-4">
+        <Link href="/app" onClick={onNavigate} className="group inline-flex items-center gap-2.5">
+          <span className="size-1.5 rotate-45 bg-foreground transition-transform duration-500 group-hover:rotate-[225deg]" />
+          <span className="font-editorial text-base">Atlas</span>
         </Link>
         <Link
           href={`/${username}`}
@@ -136,10 +138,10 @@ function SidebarContent({
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 space-y-7 overflow-y-auto px-3 py-5">
         {NAV.map((section) => (
           <div key={section.group}>
-            <p className="px-2 pb-2 text-xs font-medium text-muted-foreground">
+            <p className="px-2 pb-2 text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
               {section.group}
             </p>
             <ul className="space-y-0.5">
@@ -155,13 +157,13 @@ function SidebarContent({
                       onClick={onNavigate}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-colors",
+                        "flex items-center gap-2.5 rounded-md border-l-2 border-transparent px-2 py-2 text-sm transition-[color,background-color,border-color] duration-300",
                         active
-                          ? "bg-background font-medium shadow-sm"
-                          : "text-muted-foreground hover:bg-background/60 hover:text-foreground",
+                          ? "border-brand bg-background/55 font-medium text-foreground"
+                          : "text-muted-foreground hover:bg-background/35 hover:text-foreground",
                       )}
                     >
-                      <item.icon className="size-4" />
+                      <item.icon className="size-3.5" strokeWidth={1.6} />
                       <span className="flex-1">{item.label}</span>
                       {item.badge && newLeads > 0 ? (
                         <span className="rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-semibold leading-none text-brand-foreground">
@@ -177,7 +179,7 @@ function SidebarContent({
         ))}
       </nav>
 
-      <div className="border-t p-3">
+      <div className="hairline border-t p-3">
         <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{userName}</p>

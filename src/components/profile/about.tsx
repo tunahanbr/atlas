@@ -20,9 +20,12 @@ export function About({
     <Section id="about" title="About">
       {profile.bio ? (
         <Reveal>
-          <div className="space-y-4">
+          <div className="max-w-2xl space-y-5">
             {profile.bio.split(/\n\s*\n/).map((paragraph, i) => (
-              <p key={i} className="text-sm leading-relaxed text-muted-foreground text-pretty">
+              <p
+                key={i}
+                className="font-editorial text-lg leading-[1.65] text-quiet text-pretty first:text-foreground"
+              >
                 {paragraph}
               </p>
             ))}
@@ -32,15 +35,17 @@ export function About({
 
       {hasSkills ? (
         <Reveal delay={0.05}>
-          <div className="mt-8 space-y-4">
+          <div className="hairline mt-10 grid gap-5 border-t pt-6 sm:grid-cols-2">
             {skillGroups.map(([category, skills]) => (
               <div key={category}>
-                <h3 className="text-xs font-medium text-muted-foreground">{category}</h3>
-                <ul className="mt-2 flex flex-wrap gap-1.5">
+                <h3 className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                  {category}
+                </h3>
+                <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
                   {skills.map((skill) => (
                     <li
                       key={skill.id}
-                      className="rounded-md border bg-card px-2.5 py-1 text-xs"
+                      className="text-xs text-foreground/80 before:mr-1.5 before:text-muted-foreground before:content-['·']"
                     >
                       {skill.name}
                     </li>
@@ -54,10 +59,10 @@ export function About({
 
       {hasCerts ? (
         <Reveal delay={0.1}>
-          <ul className="mt-8 space-y-3">
+          <ul className="hairline mt-10 space-y-4 border-t pt-6">
             {profile.certifications.map((cert) => (
               <li key={cert.id} className="flex items-start gap-3 text-sm">
-                <Award className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                <Award className="mt-0.5 size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
                 <div>
                   <span className="font-medium">{cert.name}</span>
                   <span className="text-muted-foreground">

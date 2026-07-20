@@ -82,10 +82,10 @@ export function PageHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-start justify-between gap-4 pb-8 sm:flex-row">
+    <div className="hairline flex flex-col items-start justify-between gap-4 border-b pb-7 sm:flex-row">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <h1 className="font-editorial text-2xl font-normal tracking-[-0.02em]">{title}</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
       </div>
       {children}
     </div>
@@ -102,8 +102,8 @@ export function EmptyState({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed py-16 text-center">
-      <p className="font-medium">{title}</p>
+    <div className="hairline flex flex-col items-center gap-2 border-y py-16 text-center">
+      <p className="font-editorial text-lg">{title}</p>
       <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
       {children ? <div className="mt-4">{children}</div> : null}
     </div>

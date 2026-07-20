@@ -30,7 +30,7 @@ export default async function DashboardLayout({
         userName={session.user.name ?? ""}
         userEmail={session.user.email ?? ""}
       />
-      <main className="px-4 py-6 sm:px-6 lg:flex-1 lg:px-12 lg:py-8">
+      <main className="px-4 py-7 sm:px-6 lg:flex-1 lg:px-12 lg:py-10">
         <div className="mx-auto w-full max-w-4xl">{children}</div>
       </main>
     </div>

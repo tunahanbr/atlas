@@ -12,13 +12,14 @@ export function Experience({
 
   return (
     <Section id="experience" title="Experience">
-      <ul className="space-y-6">
+      <ul className="hairline ml-1 space-y-0 border-l">
         {experiences.map((exp, i) => (
           <Reveal key={exp.id} delay={i * 0.03}>
-            <li className="flex items-start justify-between gap-6">
+            <li className="relative flex items-start justify-between gap-6 py-5 pl-6 first:pt-0 last:pb-0">
+              <span className="absolute top-7 -left-[3px] size-[5px] rounded-full bg-foreground first:top-2" />
               <div className="min-w-0">
-                <h3 className="font-medium tracking-tight">{exp.role}</h3>
-                <p className="mt-0.5 text-sm text-muted-foreground">{exp.company}</p>
+                <h3 className="font-editorial text-lg tracking-[-0.01em]">{exp.role}</h3>
+                <p className="mt-1 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">{exp.company}</p>
                 {exp.description ? (
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">
                     {exp.description}

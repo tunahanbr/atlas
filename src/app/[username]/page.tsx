@@ -89,7 +89,7 @@ export default async function ProfilePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
       <ProfileNav name={name} />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-6">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-5 sm:px-6">
         <Hero profile={profile} />
         <Services username={profile.username} services={profile.services} />
         <Projects

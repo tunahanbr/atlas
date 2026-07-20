@@ -13,22 +13,22 @@ export function Testimonials({
 
   return (
     <Section id="testimonials" title="Testimonials">
-      <ul className="space-y-4">
+      <ul className="space-y-5">
         {testimonials.map((t, i) => (
           <Reveal key={t.id} delay={i * 0.04}>
             <li>
-              <figure className="rounded-xl border bg-card p-6">
-                <blockquote className="text-sm leading-relaxed text-pretty">
+              <figure className="hairline border-l py-3 pl-6 sm:pl-8">
+                <blockquote className="font-editorial text-xl leading-[1.45] tracking-[-0.01em] text-pretty sm:text-[1.35rem]">
                   “{t.content}”
                 </blockquote>
-                <figcaption className="mt-4 flex items-center gap-3">
-                  <Avatar className="size-8 border">
+                <figcaption className="mt-5 flex items-center gap-3">
+                  <Avatar className="size-7 border-0">
                     {t.avatarUrl ? <AvatarImage src={t.avatarUrl} alt={t.authorName} /> : null}
                     <AvatarFallback className="text-xs">{initials(t.authorName)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium">{t.authorName}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs font-medium">{t.authorName}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
                       {[t.authorRole, t.authorCompany].filter(Boolean).join(", ")}
                     </p>
                   </div>

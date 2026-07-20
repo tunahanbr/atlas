@@ -24,7 +24,7 @@ export function LeadForm({ username }: { username: string }) {
 
   if (state.status === "success") {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-xl border bg-card p-10 text-center">
+      <div className="hairline flex flex-col items-center gap-3 border-y py-12 text-center">
         <CheckCircle2 className="size-8 text-success" />
         <p className="font-medium">Message sent</p>
         <p className="max-w-sm text-sm text-muted-foreground">
@@ -37,7 +37,7 @@ export function LeadForm({ username }: { username: string }) {
   const errors = state.status === "error" ? state.errors : {};
 
   return (
-    <form action={action} className="rounded-xl border bg-card p-6">
+    <form action={action} className="hairline border-y py-7 sm:py-9">
       <input type="hidden" name="username" value={username} />
       <div className="absolute -left-[10000px] size-px overflow-hidden" aria-hidden="true">
         <label htmlFor="lead-contact-url">Leave this field empty</label>
@@ -92,11 +92,11 @@ export function LeadForm({ username }: { username: string }) {
         />
         {errors.message ? <FieldError message={errors.message[0]} /> : null}
       </div>
-      <Button type="submit" size="lg" className="mt-6 w-full rounded-xl" disabled={pending}>
+      <Button type="submit" size="lg" className="mt-6 w-full" disabled={pending}>
         {pending ? <Loader2 className="size-4 animate-spin" /> : null}
         Send inquiry
       </Button>
-      <p className="mt-3 text-center text-xs text-muted-foreground">
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
         Goes directly to the owner — no middleman, no fees.
       </p>
     </form>

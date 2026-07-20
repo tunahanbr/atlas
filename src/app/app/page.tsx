@@ -63,9 +63,9 @@ export default async function OverviewPage() {
       </PageHeader>
 
       {!completeness.complete ? (
-        <section className="rounded-xl border bg-card p-6">
+        <section className="hairline mt-6 border-y py-6">
           <div className="flex items-center justify-between">
-            <h2 className="font-medium tracking-tight">Profile completeness</h2>
+            <h2 className="font-editorial text-lg">Profile completeness</h2>
             <span className="text-sm tabular-nums text-muted-foreground">
               {completeness.done}/{completeness.total}
             </span>
@@ -104,14 +104,14 @@ export default async function OverviewPage() {
         </section>
       ) : null}
 
-      <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="hairline mt-8 grid border-y sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Link
             key={stat.label}
             href={stat.href}
-            className="rounded-xl border bg-card p-5 transition-colors hover:border-foreground/20"
+            className="hairline border-b p-5 transition-colors duration-300 hover:bg-card/60 sm:border-r lg:border-b-0"
           >
-            <p className="text-2xl font-semibold tabular-nums tracking-tight">
+            <p className="font-editorial text-3xl tabular-nums tracking-[-0.02em]">
               {stat.value}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
@@ -119,9 +119,9 @@ export default async function OverviewPage() {
         ))}
       </section>
 
-      <section className="mt-6 rounded-xl border bg-card">
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="font-medium tracking-tight">Recent leads</h2>
+      <section className="hairline mt-8 border-y">
+        <div className="hairline flex items-center justify-between border-b px-1 py-4">
+          <h2 className="font-editorial text-lg">Recent leads</h2>
           <Link
             href="/app/leads"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
