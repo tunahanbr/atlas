@@ -13,7 +13,7 @@ MIT licensed. Self-hostable. You own your data.
 - **Public profile** — hero, availability badge, services with pricing,
   portfolio with case studies, testimonials, experience, skills, certifications
 - **Lead inbox** — contact form submissions land in a clean inbox; reply
-  directly by email
+  directly by email, with optional SMTP notifications and signed webhooks
 - **Dashboard** — manage everything from a calm, Linear-inspired interface
 - **SEO-first** — structured data (JSON-LD), Open Graph, sitemap, semantic HTML
 - **Dark mode** — system, light or dark default per profile
@@ -56,6 +56,17 @@ on container start. Put a reverse proxy (Caddy, nginx, Traefik) with TLS in
 front, ensure it replaces untrusted forwarding headers, and set `AUTH_URL` /
 `NEXT_PUBLIC_APP_URL` to your public URL. GitHub OAuth is required in production;
 the email-only development login is never registered in a production build.
+
+### Lead notifications
+
+New leads are always stored before delivery is attempted. Configure email with
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM` and, when required, `SMTP_USER` /
+`SMTP_PASS`. The notification is sent to the profile owner's account email and
+uses the lead's address as `Reply-To`.
+
+For integrations, set `LEAD_WEBHOOK_URL` and `LEAD_WEBHOOK_SECRET`. Atlas sends
+`lead.created` JSON payloads with an `X-Atlas-Signature: sha256=<hmac>` header.
+Webhook delivery requires HTTPS in production and does not follow redirects.
 
 ## Useful commands
 
