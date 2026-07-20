@@ -24,7 +24,7 @@ export function LeadForm({ username }: { username: string }) {
 
   if (state.status === "success") {
     return (
-      <div className="hairline flex flex-col items-center gap-3 border-y py-12 text-center">
+      <div className="flex flex-col items-center gap-3 rounded-md bg-card/50 py-12 text-center">
         <CheckCircle2 className="size-8 text-success" />
         <p className="font-medium">Message sent</p>
         <p className="max-w-sm text-sm text-muted-foreground">
@@ -37,7 +37,7 @@ export function LeadForm({ username }: { username: string }) {
   const errors = state.status === "error" ? state.errors : {};
 
   return (
-    <form action={action} className="hairline border-y py-7 sm:py-9">
+    <form action={action} className="rounded-md bg-card/45 p-6 sm:p-8">
       <input type="hidden" name="username" value={username} />
       <div className="absolute -left-[10000px] size-px overflow-hidden" aria-hidden="true">
         <label htmlFor="lead-contact-url">Leave this field empty</label>

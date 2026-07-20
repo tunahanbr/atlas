@@ -17,10 +17,10 @@ export function Services({
 
   return (
     <Section id="services" title="Services">
-      <ul className="hairline divide-y border-y">
+      <ul className="space-y-3">
         {services.map((service, i) => (
           <Reveal key={service.id} delay={i * 0.04}>
-            <li className="group grid gap-4 py-7 transition-[padding] duration-500 sm:grid-cols-[2rem_1fr] sm:gap-5 sm:hover:pl-1">
+            <li className="group grid gap-4 rounded-md bg-card/40 px-5 py-6 transition-[background-color,transform] duration-500 hover:-translate-y-0.5 hover:bg-card/75 sm:grid-cols-[2rem_1fr] sm:gap-5">
               <span className="pt-1 font-editorial text-sm italic text-muted-foreground/70">
                 {String(i + 1).padStart(2, "0")}
               </span>

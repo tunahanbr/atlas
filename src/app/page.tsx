@@ -148,7 +148,7 @@ export default async function LandingPage() {
         </section>
 
         {/* Features */}
-        <section className="hairline border-t py-20 sm:py-24">
+        <section className="py-20 sm:py-24">
           <Reveal>
             <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
               What matters
@@ -161,10 +161,10 @@ export default async function LandingPage() {
               hire this person?
             </p>
           </Reveal>
-          <div className="hairline mt-12 grid border-y sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((feature, i) => (
               <Reveal key={feature.title} delay={i * 0.05}>
-                <div className="hairline group h-full border-b p-6 transition-colors duration-500 hover:bg-card/50 sm:border-r">
+                <div className="group h-full rounded-md bg-card/40 p-6 transition-[background-color,transform] duration-500 hover:-translate-y-0.5 hover:bg-card/75">
                   <div className="flex items-center justify-between">
                     <feature.icon className="size-4 text-muted-foreground" strokeWidth={1.5} />
                     <span className="font-editorial text-xs italic text-muted-foreground/60">
@@ -182,7 +182,7 @@ export default async function LandingPage() {
         </section>
 
         {/* How it works */}
-        <section className="hairline border-t py-20 sm:py-24">
+        <section className="py-20 sm:py-24">
           <Reveal>
             <h2 className="font-editorial text-3xl font-normal tracking-[-0.025em]">
               Live in three steps
@@ -209,7 +209,7 @@ export default async function LandingPage() {
               },
             ].map((item, i) => (
               <Reveal key={item.step} delay={i * 0.08}>
-                <li className="hairline border-t py-6 sm:min-h-48 sm:border-r sm:px-6 sm:first:pl-0 sm:last:border-r-0">
+                <li className="rounded-md px-5 py-6 transition-colors duration-300 hover:bg-card/45 sm:min-h-48">
                   <p className="font-editorial text-sm italic tabular-nums text-muted-foreground">
                     {item.step}
                   </p>
@@ -224,7 +224,7 @@ export default async function LandingPage() {
         </section>
 
         {/* Open source CTA */}
-        <section className="hairline border-t py-20 sm:py-24">
+        <section className="rounded-md bg-card/40 px-6 py-14 sm:my-10 sm:px-10 sm:py-16">
           <Reveal>
             <h2 className="font-editorial max-w-xl text-3xl font-normal tracking-[-0.025em]">
               Free forever. Self-hostable. Yours.
@@ -256,7 +256,7 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      <footer className="hairline border-t py-10">
+      <footer className="py-10">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 text-sm text-muted-foreground">
           <p>Atlas — the open-source home for independent professionals.</p>
           <p>MIT License</p>

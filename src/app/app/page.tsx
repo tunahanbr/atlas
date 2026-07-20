@@ -63,7 +63,7 @@ export default async function OverviewPage() {
       </PageHeader>
 
       {!completeness.complete ? (
-        <section className="hairline mt-6 border-y py-6">
+        <section className="mt-6 rounded-md bg-card/45 p-6">
           <div className="flex items-center justify-between">
             <h2 className="font-editorial text-lg">Profile completeness</h2>
             <span className="text-sm tabular-nums text-muted-foreground">
@@ -104,12 +104,12 @@ export default async function OverviewPage() {
         </section>
       ) : null}
 
-      <section className="hairline mt-8 grid border-y sm:grid-cols-2 lg:grid-cols-4">
+      <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Link
             key={stat.label}
             href={stat.href}
-            className="hairline border-b p-5 transition-colors duration-300 hover:bg-card/60 sm:border-r lg:border-b-0"
+            className="rounded-md bg-card/45 p-5 transition-[background-color,transform] duration-300 hover:-translate-y-0.5 hover:bg-card/75"
           >
             <p className="font-editorial text-3xl tabular-nums tracking-[-0.02em]">
               {stat.value}
@@ -119,8 +119,8 @@ export default async function OverviewPage() {
         ))}
       </section>
 
-      <section className="hairline mt-8 border-y">
-        <div className="hairline flex items-center justify-between border-b px-1 py-4">
+      <section className="mt-8 rounded-md bg-card/35 px-5">
+        <div className="flex items-center justify-between py-5">
           <h2 className="font-editorial text-lg">Recent leads</h2>
           <Link
             href="/app/leads"

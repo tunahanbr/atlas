@@ -82,7 +82,7 @@ export function PageHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="hairline flex flex-col items-start justify-between gap-4 border-b pb-7 sm:flex-row">
+    <div className="flex flex-col items-start justify-between gap-4 pb-7 sm:flex-row">
       <div>
         <h1 className="font-editorial text-2xl font-normal tracking-[-0.02em]">{title}</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>

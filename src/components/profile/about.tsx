@@ -35,7 +35,7 @@ export function About({
 
       {hasSkills ? (
         <Reveal delay={0.05}>
-          <div className="hairline mt-10 grid gap-5 border-t pt-6 sm:grid-cols-2">
+          <div className="mt-10 grid gap-5 rounded-md bg-card/40 p-6 sm:grid-cols-2">
             {skillGroups.map(([category, skills]) => (
               <div key={category}>
                 <h3 className="text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
@@ -59,7 +59,7 @@ export function About({
 
       {hasCerts ? (
         <Reveal delay={0.1}>
-          <ul className="hairline mt-10 space-y-4 border-t pt-6">
+          <ul className="mt-10 space-y-4 rounded-md bg-card/40 p-6">
             {profile.certifications.map((cert) => (
               <li key={cert.id} className="flex items-start gap-3 text-sm">
                 <Award className="mt-0.5 size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />

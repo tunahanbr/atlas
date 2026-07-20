@@ -12,7 +12,7 @@ export function Hero({ profile }: { profile: PublicProfile }) {
   const name = profile.user.name ?? profile.username;
 
   return (
-    <header id="top" className="hairline scroll-mt-20 border-b pt-28 pb-16 sm:pt-36 sm:pb-20">
+    <header id="top" className="scroll-mt-20 pt-28 pb-16 sm:pt-36 sm:pb-20">
       <div className="grid gap-9 sm:grid-cols-[7.5rem_1fr] sm:gap-10">
         <Reveal>
           <div className="flex items-end gap-4 sm:block">

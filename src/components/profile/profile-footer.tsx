@@ -9,7 +9,7 @@ export function ProfileFooter({
   socials: PublicProfile["socials"];
 }) {
   return (
-    <footer className="hairline border-t py-10 sm:py-12">
+    <footer className="py-10 sm:py-12">
       {socials.length > 0 ? (
         <ul className="flex flex-wrap gap-x-7 gap-y-2">
           {socials.map((social) => (

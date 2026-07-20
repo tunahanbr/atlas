@@ -18,7 +18,7 @@ export function Projects({
 
   return (
     <Section id="work" title="Selected Work">
-      <ul className="hairline divide-y border-y">
+      <ul className="space-y-1">
         {projects.map((project, i) => (
           <Reveal key={project.id} delay={i * 0.03}>
             <li>
@@ -26,7 +26,7 @@ export function Projects({
                 username={username}
                 event="PROJECT_CLICK"
                 href={`${basePath}/work/${project.slug}`}
-                className="group flex items-start justify-between gap-5 py-6 transition-[padding,color] duration-500 hover:px-2"
+                className="group flex items-start justify-between gap-5 rounded-md px-3 py-5 transition-[background-color,transform] duration-500 hover:translate-x-1 hover:bg-card/55"
               >
                 <div className="flex min-w-0 gap-4">
                   <span className="mt-1 hidden font-editorial text-sm italic text-muted-foreground/65 sm:block">
