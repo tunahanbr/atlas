@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Loader2 } from "lucide-react";
 
-import { signInWithDevLogin, signInWithGitHub } from "@/server/actions/auth";
+import { signInWithDevLogin, signInWithGitHub, signInWithMagicLink } from "@/server/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,15 +11,37 @@ import { Separator } from "@/components/ui/separator";
 
 export function LoginForm({
   hasGitHub,
+  hasSupabase,
   devLoginEnabled,
 }: {
   hasGitHub: boolean;
+  hasSupabase: boolean;
   devLoginEnabled: boolean;
 }) {
   const [state, action, pending] = useActionState(signInWithDevLogin, undefined);
+  const [magicState, magicAction, magicPending] = useActionState(signInWithMagicLink, undefined);
 
   return (
     <div className="space-y-4">
+      {hasSupabase ? (
+        <form action={magicAction} className="space-y-4 rounded-md bg-card/55 p-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="magic-email">Email</Label>
+            <Input id="magic-email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required />
+          </div>
+          {magicState?.error ? <p className="text-xs text-destructive" role="alert">{magicState.error}</p> : null}
+          {magicState?.success ? <p className="text-xs text-success" role="status">{magicState.success}</p> : null}
+          <Button type="submit" className="w-full" size="lg" disabled={magicPending}>
+            {magicPending ? <Loader2 className="size-4 animate-spin" /> : null}
+            Email me a sign-in link
+          </Button>
+        </form>
+      ) : null}
+
+      {hasSupabase && hasGitHub ? (
+        <div className="flex items-center gap-3"><Separator className="flex-1" /><span className="text-xs text-muted-foreground">or</span><Separator className="flex-1" /></div>
+      ) : null}
+
       {hasGitHub ? (
         <form action={signInWithGitHub}>
           <Button type="submit" variant="outline" className="w-full" size="lg">
@@ -31,7 +53,7 @@ export function LoginForm({
         </form>
       ) : null}
 
-      {hasGitHub && devLoginEnabled ? (
+      {(hasGitHub || hasSupabase) && devLoginEnabled ? (
         <div className="flex items-center gap-3">
           <Separator className="flex-1" />
           <span className="text-xs text-muted-foreground">or</span>
@@ -71,11 +93,11 @@ export function LoginForm({
         </form>
       ) : null}
 
-      {!hasGitHub && !devLoginEnabled ? (
+      {!hasGitHub && !hasSupabase && !devLoginEnabled ? (
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-5 text-sm">
           <p className="font-medium">Sign-in is not configured</p>
           <p className="mt-1 text-muted-foreground">
-            Set AUTH_GITHUB_ID and AUTH_GITHUB_SECRET on this instance, then restart Atlas.
+            Configure Supabase Auth or GitHub OAuth on this instance, then restart Atlas.
           </p>
         </div>
       ) : null}

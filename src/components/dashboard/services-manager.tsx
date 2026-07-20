@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Pencil, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, GripVertical, Loader2, Pencil, Plus } from "lucide-react";
 
 import { upsertService, deleteService } from "@/server/actions/entities";
 import { formatDelivery, formatPrice } from "@/lib/format";
@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useReorder } from "@/components/dashboard/use-reorder";
 
 type Service = {
   id: string;
@@ -39,6 +40,7 @@ type Service = {
 };
 
 export function ServicesManager({ services }: { services: Service[] }) {
+  const reorder = useReorder(services, "services");
   const { open, setOpen, pending, submit } = useUpsert(upsertService);
   const [editing, setEditing] = useState<Service | null>(null);
 
@@ -98,8 +100,9 @@ export function ServicesManager({ services }: { services: Service[] }) {
         </EmptyState>
       ) : (
         <ul className="mt-6 divide-y rounded-xl border bg-card">
-          {services.map((service) => (
-            <li key={service.id} className="flex items-center gap-4 px-5 py-4">
+          {reorder.items.map((service, index) => (
+            <li key={service.id} {...reorder.dragProps(service.id)} className="flex items-center gap-3 px-4 py-4">
+              <GripVertical className="size-4 cursor-grab text-muted-foreground" aria-hidden />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="truncate font-medium tracking-tight">{service.title}</p>
@@ -116,6 +119,7 @@ export function ServicesManager({ services }: { services: Service[] }) {
                     : ""}
                 </p>
               </div>
+              <span className="hidden gap-0.5 sm:flex"><Button variant="ghost" size="icon" aria-label={`Move ${service.title} up`} disabled={index === 0 || reorder.pending} onClick={() => reorder.moveBy(service.id, -1)}><ChevronUp className="size-3.5" /></Button><Button variant="ghost" size="icon" aria-label={`Move ${service.title} down`} disabled={index === reorder.items.length - 1 || reorder.pending} onClick={() => reorder.moveBy(service.id, 1)}><ChevronDown className="size-3.5" /></Button></span>
               <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => openEdit(service)}>
                 <Pencil className="size-4" />
               </Button>

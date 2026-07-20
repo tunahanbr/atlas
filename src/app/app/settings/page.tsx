@@ -7,6 +7,8 @@ import { PageHeader } from "@/components/dashboard/shared";
 import { SeoForm } from "@/components/dashboard/seo-form";
 import { CustomDomains } from "@/components/dashboard/custom-domains";
 import { platformHostname } from "@/lib/domains";
+import { ProfileVisibility } from "@/components/dashboard/profile-visibility";
+import { AccountDataControls } from "@/components/dashboard/account-data-controls";
 
 export const metadata = { title: "Settings" };
 
@@ -21,6 +23,7 @@ export default async function SettingsPage() {
       seoDescription: true,
       username: true,
       createdAt: true,
+      published: true,
       domains: { orderBy: { createdAt: "asc" } },
     },
   });
@@ -32,6 +35,7 @@ export default async function SettingsPage() {
       <PageHeader title="Settings" description="Control how your profile is found, connected and notified." />
 
       <div className="space-y-6">
+        <ProfileVisibility published={profile.published} />
         <SeoForm seoTitle={profile.seoTitle} seoDescription={profile.seoDescription} />
 
         <CustomDomains
@@ -57,6 +61,8 @@ export default async function SettingsPage() {
             />
           </div>
         </section>
+
+        <AccountDataControls username={profile.username} />
 
         <section className="rounded-xl border bg-card p-6">
           <h2 className="font-medium tracking-tight">Account</h2>

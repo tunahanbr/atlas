@@ -35,10 +35,11 @@ export function getLeadNotificationStatus() {
 
 export async function sendLeadNotifications(
   input: LeadNotificationInput,
+  channels: { email?: boolean; webhook?: boolean } = { email: true, webhook: true },
 ): Promise<LeadNotificationResult> {
   const [email, webhook] = await Promise.all([
-    sendLeadEmail(input),
-    sendLeadWebhook(input),
+    channels.email === false ? Promise.resolve("skipped" as const) : sendLeadEmail(input),
+    channels.webhook === false ? Promise.resolve("skipped" as const) : sendLeadWebhook(input),
   ]);
 
   return { email, webhook };

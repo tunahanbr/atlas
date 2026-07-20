@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
-import { auth, isDevLoginEnabled } from "@/auth";
+import { auth, hasLegacyGitHub, isDevLoginEnabled } from "@/auth";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata = { title: "Sign in" };
@@ -10,8 +11,10 @@ export default async function LoginPage() {
   const session = await auth();
   if (session?.user) redirect("/app");
 
-  const hasGitHub =
-    !!process.env.AUTH_GITHUB_ID && !!process.env.AUTH_GITHUB_SECRET;
+  const hasSupabase = isSupabaseConfigured();
+  const hasGitHub = hasSupabase
+    ? process.env.SUPABASE_AUTH_GITHUB_ENABLED === "true"
+    : hasLegacyGitHub;
 
   return (
     <main className="flex min-h-svh items-center px-5 py-12 sm:px-6">
@@ -35,7 +38,7 @@ export default async function LoginPage() {
           <h2 className="font-editorial text-2xl">Sign in or get started</h2>
           <p className="mt-2 text-sm text-muted-foreground">One account, no separate signup flow.</p>
           <div className="mt-7">
-          <LoginForm hasGitHub={hasGitHub} devLoginEnabled={isDevLoginEnabled} />
+          <LoginForm hasGitHub={hasGitHub} hasSupabase={hasSupabase} devLoginEnabled={isDevLoginEnabled && !hasSupabase} />
           </div>
         </div>
       </div>

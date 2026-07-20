@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Pencil, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, GripVertical, Loader2, Pencil, Plus } from "lucide-react";
 
 import { upsertTestimonial, deleteTestimonial } from "@/server/actions/entities";
 import { useUpsert, DeleteButton, EmptyState } from "@/components/dashboard/shared";
@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { initials } from "@/lib/format";
+import { useReorder } from "@/components/dashboard/use-reorder";
 
 type Testimonial = {
   id: string;
@@ -30,6 +31,7 @@ type Testimonial = {
 };
 
 export function TestimonialsManager({ testimonials }: { testimonials: Testimonial[] }) {
+  const reorder = useReorder(testimonials, "testimonials");
   const { open, setOpen, pending, submit } = useUpsert(upsertTestimonial);
   const [editing, setEditing] = useState<Testimonial | null>(null);
 
@@ -78,8 +80,9 @@ export function TestimonialsManager({ testimonials }: { testimonials: Testimonia
         </EmptyState>
       ) : (
         <ul className="mt-6 divide-y rounded-xl border bg-card">
-          {testimonials.map((t) => (
-            <li key={t.id} className="flex items-center gap-4 px-5 py-4">
+          {reorder.items.map((t, index) => (
+            <li key={t.id} {...reorder.dragProps(t.id)} className="flex items-center gap-3 px-4 py-4">
+              <GripVertical className="size-4 cursor-grab text-muted-foreground" aria-hidden />
               <Avatar className="size-9 shrink-0 border">
                 <AvatarFallback className="text-xs">{initials(t.authorName)}</AvatarFallback>
               </Avatar>
@@ -96,6 +99,7 @@ export function TestimonialsManager({ testimonials }: { testimonials: Testimonia
                   {[t.authorRole, t.authorCompany].filter(Boolean).join(", ")} — “{t.content}”
                 </p>
               </div>
+              <span className="hidden gap-0.5 sm:flex"><Button variant="ghost" size="icon" aria-label={`Move ${t.authorName} up`} disabled={index === 0 || reorder.pending} onClick={() => reorder.moveBy(t.id, -1)}><ChevronUp className="size-3.5" /></Button><Button variant="ghost" size="icon" aria-label={`Move ${t.authorName} down`} disabled={index === reorder.items.length - 1 || reorder.pending} onClick={() => reorder.moveBy(t.id, 1)}><ChevronDown className="size-3.5" /></Button></span>
               <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => openEdit(t)}>
                 <Pencil className="size-4" />
               </Button>

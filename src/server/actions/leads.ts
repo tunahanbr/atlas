@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { after } from "next/server";
 
 import { db } from "@/server/db";
-import { sendLeadNotifications } from "@/server/lead-notifications";
+import { processLeadNotificationJob } from "@/server/notification-jobs";
 import { recordContactSubmission } from "@/server/analytics";
 import { leadSchema, type LeadInput } from "@/lib/validations";
 
@@ -91,7 +91,9 @@ export async function submitLead(
       email: parsed.data.email,
       budget: parsed.data.budget || null,
       message: parsed.data.message,
+      notificationJob: { create: {} },
     },
+    include: { notificationJob: { select: { id: true } } },
   });
 
   // Next.js keeps the request alive for this work without delaying the success
@@ -99,11 +101,7 @@ export async function submitLead(
   after(async () => {
     await Promise.all([
       recordContactSubmission(profile.id),
-      sendLeadNotifications({
-        lead,
-        owner: profile.user,
-        profile: { username: profile.username },
-      }),
+      lead.notificationJob ? processLeadNotificationJob(lead.notificationJob.id) : Promise.resolve(false),
     ]);
   });
 

@@ -69,7 +69,7 @@ export default async function OverviewPage({
         description="Your public page, conversations and next useful step in one place."
       />
 
-      <ProfileLaunchPanel profilePath={`/${profile.username}`} isWelcome={isWelcome} />
+      <ProfileLaunchPanel profilePath={`/${profile.username}`} isWelcome={isWelcome} published={profile.published} />
 
       {!completeness.complete && nextCheck ? (
         <section className="mt-6 rounded-md bg-card/45 p-6 sm:flex sm:items-start sm:justify-between sm:gap-8">

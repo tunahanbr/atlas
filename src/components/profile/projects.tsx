@@ -9,10 +9,12 @@ export function Projects({
   username,
   basePath,
   projects,
+  preview = false,
 }: {
   username: string;
   basePath: string;
   projects: PublicProfile["projects"];
+  preview?: boolean;
 }) {
   if (projects.length === 0) return null;
 
@@ -20,16 +22,15 @@ export function Projects({
     <Section id="work" title="Selected Work">
       <ul className="space-y-1">
         {projects.map((project, i) => (
-          <Reveal key={project.id} delay={i * 0.03}>
-            <li>
+          <Reveal key={project.id} as="li" delay={i * 0.03}>
               <AnalyticsLink
                 username={username}
                 event="PROJECT_CLICK"
-                href={`${basePath}/work/${project.slug}`}
+                href={`${basePath}/work/${project.slug}${preview ? "?preview=1" : ""}`}
                 className="group flex items-start justify-between gap-5 rounded-md px-3 py-5 transition-[background-color,transform] duration-500 hover:translate-x-1 hover:bg-card/55"
               >
                 <div className="flex min-w-0 gap-4">
-                  <span className="mt-1 hidden font-editorial text-sm italic text-muted-foreground/65 sm:block">
+                  <span className="mt-1 hidden font-editorial text-sm italic text-muted-foreground sm:block">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="min-w-0">
@@ -46,7 +47,7 @@ export function Projects({
                     {project.summary}
                   </p>
                   {project.technologies.length > 0 ? (
-                    <p className="mt-3 text-[11px] text-muted-foreground/80">
+                    <p className="mt-3 text-xs text-muted-foreground">
                       {project.technologies.join(" · ")}
                     </p>
                   ) : null}
@@ -61,7 +62,6 @@ export function Projects({
                   <ArrowUpRight className="size-4 text-muted-foreground transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-foreground" />
                 </div>
               </AnalyticsLink>
-            </li>
           </Reveal>
         ))}
       </ul>

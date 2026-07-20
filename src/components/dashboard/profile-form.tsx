@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { MediaUploadField } from "@/components/dashboard/media-upload-field";
 import {
   Select,
   SelectContent,
@@ -36,6 +37,7 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [socials, setSocials] = useState(profile.socials);
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl ?? "");
 
   function addSocial() {
     if (socials.length >= 10) return;
@@ -58,7 +60,7 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
       headline: String(fd.get("headline") ?? ""),
       bio: String(fd.get("bio") ?? ""),
       location: String(fd.get("location") ?? ""),
-      avatarUrl: String(fd.get("avatarUrl") ?? ""),
+      avatarUrl,
       availability: String(fd.get("availability") ?? "AVAILABLE"),
       availabilityNote: String(fd.get("availabilityNote") ?? ""),
       bookingUrl: String(fd.get("bookingUrl") ?? ""),
@@ -117,10 +119,7 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
               <Label htmlFor="location">Location</Label>
               <Input id="location" name="location" defaultValue={profile.location ?? ""} placeholder="Berlin, Germany" maxLength={80} />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="avatarUrl">Avatar URL</Label>
-              <Input id="avatarUrl" name="avatarUrl" type="url" defaultValue={profile.avatarUrl ?? ""} placeholder="https://" />
-            </div>
+            <MediaUploadField id="avatar-file" label="Portrait" value={avatarUrl} onChange={setAvatarUrl} />
           </div>
         </div>
       </section>

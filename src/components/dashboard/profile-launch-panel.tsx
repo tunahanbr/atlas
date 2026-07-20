@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 export function ProfileLaunchPanel({
   profilePath,
   isWelcome,
+  published,
 }: {
   profilePath: string;
   isWelcome: boolean;
+  published: boolean;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -43,11 +45,11 @@ export function ProfileLaunchPanel({
     <section className="rounded-md bg-primary px-6 py-6 text-primary-foreground sm:flex sm:items-center sm:justify-between sm:gap-8">
       <div>
         <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-primary-foreground/60">
-          <span className="mr-2 inline-block size-1.5 rounded-full bg-success" />
-          Your profile is live
+          <span className={`mr-2 inline-block size-1.5 rounded-full ${published ? "bg-success" : "bg-primary-foreground/40"}`} />
+          {published ? "Your profile is live" : "Private draft"}
         </p>
         <h2 className="font-editorial mt-3 text-2xl tracking-[-0.02em]">
-          {isWelcome ? "Your corner of the internet is ready." : "Ready when you are."}
+          {isWelcome ? "Your corner of the internet is ready." : published ? "Ready when you are." : "Shape it before you share it."}
         </h2>
         <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-primary-foreground/65">
           {isWelcome
@@ -56,20 +58,20 @@ export function ProfileLaunchPanel({
         </p>
       </div>
       <div className="mt-5 flex shrink-0 flex-wrap gap-2 sm:mt-0">
-        <Button
+        {published ? <Button
           variant="outline"
           onClick={copyProfileUrl}
           className="border-primary-foreground/25 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
         >
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           {copied ? "Copied" : "Copy link"}
-        </Button>
+        </Button> : null}
         <Button
-          render={<Link href={profilePath} target="_blank" />}
+          render={<Link href={published ? profilePath : `${profilePath}?preview=1`} target="_blank" />}
           nativeButton={false}
           className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
         >
-          Open profile
+          {published ? "Open profile" : "Preview draft"}
           <ExternalLink className="size-4" />
         </Button>
       </div>

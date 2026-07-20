@@ -30,7 +30,7 @@ export function ProfileFooter({
       <p className="mt-8 font-editorial text-sm italic text-muted-foreground">
         Powered by{" "}
         <Link
-          href="https://github.com"
+          href="https://github.com/tunahanbr/atlas"
           target="_blank"
           rel="noopener noreferrer"
           className="font-medium text-foreground/80 hover:text-foreground"
@@ -39,6 +39,7 @@ export function ProfileFooter({
         </Link>
         {" "}— the open-source home for independent professionals.
       </p>
+      <p className="mt-3 flex gap-4 text-xs text-muted-foreground"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></p>
     </footer>
   );
 }

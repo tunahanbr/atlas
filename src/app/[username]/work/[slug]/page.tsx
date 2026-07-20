@@ -10,8 +10,9 @@ import { Reveal } from "@/components/profile/reveal";
 import { AnalyticsPageView } from "@/components/profile/analytics-tracker";
 import { ProfileNav } from "@/components/profile/profile-nav";
 import { ProfileTheme } from "@/components/profile/profile-theme";
+import { auth } from "@/auth";
 
-type Props = { params: Promise<{ username: string; slug: string }> };
+type Props = { params: Promise<{ username: string; slug: string }>; searchParams: Promise<{ preview?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username, slug } = await params;
@@ -27,23 +28,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: project.title,
       description: project.summary,
-      images: project.imageUrl ? [{ url: project.imageUrl }] : undefined,
+      images: [{ url: `/${project.profile.username}/work/${project.slug}/opengraph-image`, width: 1200, height: 630 }],
       url: projectUrl,
     },
     alternates: { canonical: projectUrl },
   };
 }
 
-export default async function ProjectPage({ params }: Props) {
+export default async function ProjectPage({ params, searchParams }: Props) {
   const { username, slug } = await params;
-  const project = await getProjectBySlug(username, slug);
+  const previewRequested = (await searchParams).preview === "1";
+  const session = previewRequested ? await auth() : null;
+  const project = await getProjectBySlug(username, slug, previewRequested);
   if (!project) notFound();
+  const isOwnerPreview = previewRequested && session?.user?.id === project.profile.userId;
+  if (previewRequested && !isOwnerPreview) notFound();
   const customHost = (await headers()).get("x-atlas-custom-host");
   const profileBasePath = customHost ? "" : `/${project.profile.username}`;
 
   const ownerName = project.profile.user.name ?? project.profile.username;
-  const contactHref = `${profileBasePath || "/"}#contact`;
-  const workHref = `${profileBasePath || "/"}#work`;
+  const previewQuery = isOwnerPreview ? "?preview=1" : "";
+  const contactHref = `${profileBasePath || "/"}${previewQuery}#contact`;
+  const workHref = `${profileBasePath || "/"}${previewQuery}#work`;
   const profileTheme =
     project.profile.theme === "light" || project.profile.theme === "dark"
       ? project.profile.theme
@@ -52,16 +58,17 @@ export default async function ProjectPage({ params }: Props) {
   return (
     <>
       <ProfileTheme defaultTheme={profileTheme} />
+      {isOwnerPreview ? <div className="fixed inset-x-0 top-0 z-[60] bg-primary px-4 py-2 text-center text-xs text-primary-foreground">Private project preview</div> : null}
       <ProfileNav
         name={ownerName}
         links={[{ href: workHref, label: "All work" }]}
         contactHref={contactHref}
       />
-      <AnalyticsPageView
+      {!isOwnerPreview ? <AnalyticsPageView
         username={project.profile.username}
         event="PROJECT_VIEW"
         pageKey={`project:${project.id}`}
-      />
+      /> : null}
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 pt-28 pb-16 sm:px-6 sm:pt-32">
         <article>
           <Reveal>

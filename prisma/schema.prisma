@@ -14,6 +14,7 @@ datasource db {
 
 model User {
   id            String    @id @default(cuid())
+  supabaseId    String?   @unique
   email         String    @unique
   name          String?
   emailVerified DateTime?
@@ -87,6 +88,7 @@ model Profile {
   seoDescription   String?
   // Default color scheme visitors see: "system" | "light" | "dark"
   theme            String       @default("system")
+  published        Boolean      @default(true)
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
@@ -279,9 +281,27 @@ model Lead {
 
   user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   notes LeadNote[]
+  notificationJob LeadNotificationJob?
 
   @@index([userId, status])
   @@index([userId, nextFollowUp])
+}
+
+model LeadNotificationJob {
+  id            String   @id @default(cuid())
+  leadId        String   @unique
+  attempts      Int      @default(0)
+  nextAttemptAt DateTime @default(now())
+  completedAt   DateTime?
+  lastError     String?
+  emailCompleted   Boolean @default(false)
+  webhookCompleted Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([completedAt, nextAttemptAt])
 }
 
 model LeadNote {

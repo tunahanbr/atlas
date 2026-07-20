@@ -137,6 +137,34 @@ export async function deleteTestimonial(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+export async function reorderEntities(
+  kind: "services" | "projects" | "testimonials",
+  ids: string[],
+): Promise<ActionResult> {
+  const profile = await requireProfile();
+  const uniqueIds = [...new Set(ids)];
+  if (uniqueIds.length !== ids.length || ids.length > 100) return { ok: false, error: "Invalid order" };
+  const model = kind === "services" ? db.service : kind === "projects" ? db.project : db.testimonial;
+  // Prisma's generated delegates have different overloads, so ownership is
+  // checked with a narrow raw count before the typed per-model transaction.
+  const owned = kind === "services"
+    ? await db.service.count({ where: { profileId: profile.id, id: { in: ids } } })
+    : kind === "projects"
+      ? await db.project.count({ where: { profileId: profile.id, id: { in: ids } } })
+      : await db.testimonial.count({ where: { profileId: profile.id, id: { in: ids } } });
+  if (owned !== ids.length) return { ok: false, error: "Invalid order" };
+  void model;
+  await db.$transaction(ids.map((id, order) =>
+    kind === "services"
+      ? db.service.update({ where: { id }, data: { order } })
+      : kind === "projects"
+        ? db.project.update({ where: { id }, data: { order } })
+        : db.testimonial.update({ where: { id }, data: { order } }),
+  ));
+  revalidate(profile.username);
+  return { ok: true };
+}
+
 // ─── Experience ───────────────────────────────────────────────────────────────
 
 export async function upsertExperience(id: string | null, input: unknown): Promise<ActionResult> {

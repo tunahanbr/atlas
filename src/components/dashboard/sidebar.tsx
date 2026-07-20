@@ -58,6 +58,7 @@ const NAV = [
 
 type SidebarProps = {
   username: string;
+  published: boolean;
   newLeads: number;
   userName: string;
   userEmail: string;
@@ -112,6 +113,7 @@ export function Sidebar(props: SidebarProps) {
 
 function SidebarContent({
   username,
+  published,
   newLeads,
   userName,
   userEmail,
@@ -127,13 +129,13 @@ function SidebarContent({
           <span className="font-editorial text-base">Atlas</span>
         </Link>
         <Link
-          href={`/${username}`}
+          href={`/${username}${published ? "" : "?preview=1"}`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={onNavigate}
           className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
-          View profile
+          {published ? "View profile" : "Preview draft"}
           <ExternalLink className="size-3" />
         </Link>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Pencil, Plus, Star } from "lucide-react";
+import { ChevronDown, ChevronUp, GripVertical, Loader2, Pencil, Plus, Star } from "lucide-react";
 
 import { upsertProject, deleteProject } from "@/server/actions/entities";
 import { useUpsert, DeleteButton, EmptyState } from "@/components/dashboard/shared";
@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { MediaUploadField } from "@/components/dashboard/media-upload-field";
+import { useReorder } from "@/components/dashboard/use-reorder";
 
 type Project = {
   id: string;
@@ -43,19 +45,23 @@ function slugify(value: string): string {
 }
 
 export function PortfolioManager({ projects }: { projects: Project[] }) {
+  const reorder = useReorder(projects, "projects");
   const { open, setOpen, pending, submit } = useUpsert(upsertProject);
   const [editing, setEditing] = useState<Project | null>(null);
   const [slug, setSlug] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
   function openNew() {
     setEditing(null);
     setSlug("");
+    setImageUrl("");
     setOpen(true);
   }
 
   function openEdit(project: Project) {
     setEditing(project);
     setSlug(project.slug);
+    setImageUrl(project.imageUrl ?? "");
     setOpen(true);
   }
 
@@ -68,7 +74,7 @@ export function PortfolioManager({ projects }: { projects: Project[] }) {
       slug: String(fd.get("slug") ?? ""),
       summary: fd.get("summary"),
       description: fd.get("description"),
-      imageUrl: fd.get("imageUrl"),
+      imageUrl,
       videoUrl: fd.get("videoUrl"),
       repoUrl: fd.get("repoUrl"),
       liveUrl: fd.get("liveUrl"),
@@ -105,8 +111,9 @@ export function PortfolioManager({ projects }: { projects: Project[] }) {
         </EmptyState>
       ) : (
         <ul className="mt-6 divide-y rounded-xl border bg-card">
-          {projects.map((project) => (
-            <li key={project.id} className="flex items-center gap-4 px-5 py-4">
+          {reorder.items.map((project, index) => (
+            <li key={project.id} {...reorder.dragProps(project.id)} className="flex items-center gap-3 px-4 py-4">
+              <GripVertical className="size-4 cursor-grab text-muted-foreground" aria-hidden />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="truncate font-medium tracking-tight">{project.title}</p>
@@ -123,6 +130,7 @@ export function PortfolioManager({ projects }: { projects: Project[] }) {
                   {project.summary}
                 </p>
               </div>
+              <span className="hidden gap-0.5 sm:flex"><Button variant="ghost" size="icon" aria-label={`Move ${project.title} up`} disabled={index === 0 || reorder.pending} onClick={() => reorder.moveBy(project.id, -1)}><ChevronUp className="size-3.5" /></Button><Button variant="ghost" size="icon" aria-label={`Move ${project.title} down`} disabled={index === reorder.items.length - 1 || reorder.pending} onClick={() => reorder.moveBy(project.id, 1)}><ChevronDown className="size-3.5" /></Button></span>
               {project.year ? (
                 <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                   {project.year}
@@ -197,10 +205,7 @@ export function PortfolioManager({ projects }: { projects: Project[] }) {
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="imageUrl">Image URL</Label>
-                <Input id="imageUrl" name="imageUrl" type="url" placeholder="https://" defaultValue={editing?.imageUrl ?? ""} />
-              </div>
+              <MediaUploadField id="project-image" label="Cover image" value={imageUrl} onChange={setImageUrl} />
               <div className="space-y-1.5">
                 <Label htmlFor="videoUrl">Video URL</Label>
                 <Input id="videoUrl" name="videoUrl" type="url" placeholder="https://" defaultValue={editing?.videoUrl ?? ""} />

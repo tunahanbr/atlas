@@ -14,7 +14,7 @@ export default async function DashboardLayout({
 
   const profile = await db.profile.findUnique({
     where: { userId: session.user.id },
-    select: { username: true },
+    select: { username: true, published: true },
   });
   if (!profile) redirect("/setup");
 
@@ -26,6 +26,7 @@ export default async function DashboardLayout({
     <div className="min-h-svh lg:flex">
       <Sidebar
         username={profile.username}
+        published={profile.published}
         newLeads={newLeads}
         userName={session.user.name ?? ""}
         userEmail={session.user.email ?? ""}

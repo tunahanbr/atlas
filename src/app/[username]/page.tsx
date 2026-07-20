@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { getProfileByUsername } from "@/server/queries";
 import { serializeJsonLd } from "@/lib/json-ld";
@@ -16,8 +17,9 @@ import { LeadForm } from "@/components/profile/lead-form";
 import { ProfileFooter } from "@/components/profile/profile-footer";
 import { ProfileTheme } from "@/components/profile/profile-theme";
 import { AnalyticsPageView } from "@/components/profile/analytics-tracker";
+import { auth } from "@/auth";
 
-type Props = { params: Promise<{ username: string }> };
+type Props = { params: Promise<{ username: string }>; searchParams: Promise<{ preview?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
@@ -42,16 +44,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "profile",
       url: profileUrl,
-      images: profile.avatarUrl ? [{ url: profile.avatarUrl }] : undefined,
+      images: [{ url: `/${profile.username}/opengraph-image`, width: 1200, height: 630 }],
     },
-    twitter: { card: "summary", title, description },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
-export default async function ProfilePage({ params }: Props) {
+export default async function ProfilePage({ params, searchParams }: Props) {
   const { username } = await params;
-  const profile = await getProfileByUsername(username);
+  const previewRequested = (await searchParams).preview === "1";
+  const session = previewRequested ? await auth() : null;
+  const profile = await getProfileByUsername(username, previewRequested);
   if (!profile) notFound();
+  const isOwnerPreview = previewRequested && session?.user?.id === profile.user.id;
+  if (previewRequested && !isOwnerPreview) notFound();
   const customHost = (await headers()).get("x-atlas-custom-host");
   const profileBasePath = customHost ? "" : `/${profile.username}`;
   const profileUrl = customHost
@@ -79,11 +85,17 @@ export default async function ProfilePage({ params }: Props) {
   return (
     <>
       <ProfileTheme defaultTheme={profileTheme} />
-      <AnalyticsPageView
+      {isOwnerPreview ? (
+        <div className="fixed inset-x-0 top-0 z-[60] flex items-center justify-center gap-3 bg-primary px-4 py-2 text-xs text-primary-foreground">
+          Private preview — visitors cannot see this draft.
+          <Link href="/app/settings" className="font-medium underline underline-offset-4">Publishing settings</Link>
+        </div>
+      ) : null}
+      {!isOwnerPreview ? <AnalyticsPageView
         username={profile.username}
         event="PROFILE_VIEW"
         pageKey={`profile:${profile.username}`}
-      />
+      /> : null}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
@@ -101,6 +113,7 @@ export default async function ProfilePage({ params }: Props) {
         <Projects
           username={profile.username}
           basePath={profileBasePath}
+          preview={isOwnerPreview}
           projects={profile.projects}
         />
         <Services username={profile.username} services={profile.services} />

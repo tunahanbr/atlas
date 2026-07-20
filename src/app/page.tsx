@@ -70,7 +70,7 @@ export default async function LandingPage() {
             <Button
               render={
                 <Link
-                  href="https://github.com"
+                  href="https://github.com/tunahanbr/atlas"
                   target="_blank"
                   rel="noopener noreferrer"
                 />
@@ -208,8 +208,7 @@ export default async function LandingPage() {
                   "Put it in your bio, your email signature, your proposals. Watch the inbox.",
               },
             ].map((item, i) => (
-              <Reveal key={item.step} delay={i * 0.08}>
-                <li className="rounded-md px-5 py-6 transition-colors duration-300 hover:bg-card/45 sm:min-h-48">
+              <Reveal key={item.step} as="li" delay={i * 0.08} className="rounded-md px-5 py-6 transition-colors duration-300 hover:bg-card/45 sm:min-h-48">
                   <p className="font-editorial text-sm italic tabular-nums text-muted-foreground">
                     {item.step}
                   </p>
@@ -217,7 +216,6 @@ export default async function LandingPage() {
                   <p className="mt-2 text-sm leading-[1.65] text-muted-foreground">
                     {item.description}
                   </p>
-                </li>
               </Reveal>
             ))}
           </ol>
@@ -243,7 +241,7 @@ export default async function LandingPage() {
               </Button>
               <Button
                 render={
-                  <Link href="https://github.com" target="_blank" rel="noopener noreferrer" />
+                  <Link href="https://github.com/tunahanbr/atlas" target="_blank" rel="noopener noreferrer" />
                 }
                 nativeButton={false}
                 variant="outline"
@@ -259,7 +257,7 @@ export default async function LandingPage() {
       <footer className="py-10">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 text-sm text-muted-foreground">
           <p>Atlas — the open-source home for independent professionals.</p>
-          <p>MIT License</p>
+          <div className="flex items-center gap-5"><Link href="/privacy" className="hover:text-foreground">Privacy</Link><Link href="/terms" className="hover:text-foreground">Terms</Link><Link href="https://github.com/tunahanbr/atlas" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">GitHub</Link><span>MIT License</span></div>
         </div>
       </footer>
     </>

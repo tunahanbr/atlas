@@ -2,21 +2,21 @@ import { cache } from "react";
 
 import { db } from "@/server/db";
 
-export const getProfileByUsername = cache(async (username: string) => {
-  return db.profile.findUnique({
-    where: { username: username.toLowerCase() },
+export const getProfileByUsername = cache(async (username: string, includeDrafts = false) => {
+  return db.profile.findFirst({
+    where: { username: username.toLowerCase(), ...(includeDrafts ? {} : { published: true }) },
     include: {
-      user: { select: { name: true, email: true, image: true } },
+      user: { select: { id: true, name: true, email: true, image: true } },
       services: {
-        where: { published: true },
+        where: includeDrafts ? {} : { published: true },
         orderBy: { order: "asc" },
       },
       projects: {
-        where: { published: true },
+        where: includeDrafts ? {} : { published: true },
         orderBy: [{ featured: "desc" }, { order: "asc" }],
       },
       testimonials: {
-        where: { published: true },
+        where: includeDrafts ? {} : { published: true },
         orderBy: { order: "asc" },
       },
       experiences: { orderBy: { order: "asc" } },
@@ -31,12 +31,12 @@ export type PublicProfile = NonNullable<
   Awaited<ReturnType<typeof getProfileByUsername>>
 >;
 
-export async function getProjectBySlug(username: string, slug: string) {
+export async function getProjectBySlug(username: string, slug: string, includeDrafts = false) {
   return db.project.findFirst({
     where: {
       slug,
-      published: true,
-      profile: { username: username.toLowerCase() },
+      ...(includeDrafts ? {} : { published: true }),
+      profile: { username: username.toLowerCase(), ...(includeDrafts ? {} : { published: true }) },
     },
     include: {
       profile: {

@@ -15,8 +15,7 @@ export function Testimonials({
     <Section id="testimonials" title="Testimonials">
       <ul className="space-y-5">
         {testimonials.map((t, i) => (
-          <Reveal key={t.id} delay={i * 0.04}>
-            <li>
+          <Reveal key={t.id} as="li" delay={i * 0.04}>
               <figure className="rounded-md bg-card/45 px-6 py-7 sm:px-8">
                 <blockquote className="font-editorial text-xl leading-[1.45] tracking-[-0.01em] text-pretty sm:text-[1.35rem]">
                   “{t.content}”
@@ -34,7 +33,6 @@ export function Testimonials({
                   </div>
                 </figcaption>
               </figure>
-            </li>
           </Reveal>
         ))}
       </ul>

@@ -5,7 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 
 import { db } from "@/server/db";
 
-const hasGitHub =
+export const hasLegacyGitHub =
   !!process.env.AUTH_GITHUB_ID && !!process.env.AUTH_GITHUB_SECRET;
 export const isDevLoginEnabled = process.env.NODE_ENV !== "production";
 
@@ -32,12 +32,12 @@ const devCredentials = Credentials({
   },
 });
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const legacyAuth = NextAuth({
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
   trustHost: true,
   providers: [
-    ...(hasGitHub
+    ...(hasLegacyGitHub
       ? [
           GitHub({
             clientId: process.env.AUTH_GITHUB_ID!,
@@ -59,3 +59,46 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
+export const handlers = legacyAuth.handlers;
+export const legacySignIn = legacyAuth.signIn;
+export const legacySignOut = legacyAuth.signOut;
+
+/**
+ * Returns an Auth.js-compatible session with Atlas' internal Prisma user id.
+ * Supabase owns the session when configured; the existing Auth.js flow remains
+ * available for local development and backwards-compatible self-hosting.
+ */
+export async function auth() {
+  const { isSupabaseConfigured } = await import("@/lib/supabase/config");
+  if (!isSupabaseConfigured()) return legacyAuth.auth();
+
+  const { createSupabaseServerClient } = await import("@/lib/supabase/server");
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user?.email) return null;
+
+  const email = data.user.email.trim().toLowerCase();
+  const metadata = data.user.user_metadata ?? {};
+  const name =
+    typeof metadata.full_name === "string"
+      ? metadata.full_name
+      : typeof metadata.name === "string"
+        ? metadata.name
+        : email.split("@")[0];
+  const image =
+    typeof metadata.avatar_url === "string" ? metadata.avatar_url : undefined;
+
+  const user = await db.user.upsert({
+    where: { email },
+    update: { supabaseId: data.user.id, name, ...(image ? { image } : {}) },
+    create: { email, supabaseId: data.user.id, name, image },
+  });
+
+  return {
+    user: { id: user.id, email: user.email, name: user.name, image: user.image },
+    expires: data.user.created_at,
+  };
+}

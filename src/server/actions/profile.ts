@@ -133,3 +133,16 @@ export async function updateTheme(
   revalidatePath(`/${profile.username}`);
   return { ok: true };
 }
+
+export async function updateProfileVisibility(published: boolean): Promise<ActionResult> {
+  const user = await requireUser();
+  const profile = await db.profile.update({
+    where: { userId: user.id },
+    data: { published: Boolean(published) },
+    select: { username: true },
+  });
+  revalidatePath(`/${profile.username}`);
+  revalidatePath("/app");
+  revalidatePath("/app/settings");
+  return { ok: true };
+}
