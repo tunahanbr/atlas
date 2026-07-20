@@ -24,6 +24,8 @@ async function seedDemo(tx: Prisma.TransactionClient) {
     create: {
       userId: user.id,
       username: "lena",
+      displayName: "Lena Hart",
+      profileLabel: "Independent professional",
       headline: "Senior Product Engineer — I design and build web products that win clients",
       bio: "I'm a product engineer with 10+ years of experience shipping web applications for startups and scale-ups. I work across the stack — from database schema to pixel-perfect UI — and I care about one thing: software that moves your business forward.\n\nPreviously lead engineer at two VC-backed startups. Today I work with a small number of selected clients on product strategy, architecture and hands-on delivery.",
       location: "Vienna, Austria",

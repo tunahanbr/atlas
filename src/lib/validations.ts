@@ -33,6 +33,8 @@ const urlOrEmpty = z
 
 export const profileSchema = z.object({
   username: usernameSchema,
+  displayName: z.string().trim().max(80).optional().or(z.literal("")),
+  profileLabel: z.string().trim().max(60).optional().or(z.literal("")),
   headline: z.string().trim().max(120).optional().or(z.literal("")),
   bio: z.string().trim().max(2000).optional().or(z.literal("")),
   location: z.string().trim().max(80).optional().or(z.literal("")),
@@ -74,6 +76,7 @@ export const projectSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and hyphens only"),
   summary: z.string().trim().min(10).max(280),
   description: z.string().trim().max(10000).optional().or(z.literal("")),
+  accentColor: z.enum(["stone", "sage", "blue", "plum", "amber"]).default("stone"),
   imageUrl: urlOrEmpty,
   videoUrl: urlOrEmpty,
   repoUrl: urlOrEmpty,
@@ -91,6 +94,8 @@ export const testimonialSchema = z.object({
   content: z.string().trim().min(10).max(1000),
   published: z.boolean().default(true),
 });
+
+export const testimonialSubmissionSchema = testimonialSchema.omit({ published: true });
 
 export const experienceSchema = z.object({
   company: z.string().trim().min(2).max(100),

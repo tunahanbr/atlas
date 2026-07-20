@@ -10,7 +10,15 @@ import { recordAnalyticsEvent } from "@/server/analytics";
 const eventSchema = z.object({
   username: usernameSchema,
   event: z.enum(ANALYTICS_EVENTS),
+  pageKey: z.string().trim().min(1).max(160),
 });
+
+function clientAddress(request: Request): string {
+  return request.headers.get("cf-connecting-ip")?.trim()
+    || request.headers.get("x-real-ip")?.trim()
+    || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || `unknown:${request.headers.get("user-agent")?.slice(0, 160) ?? "client"}`;
+}
 
 export async function POST(request: Request) {
   const contentLength = Number(request.headers.get("content-length") ?? 0);
@@ -43,6 +51,7 @@ export async function POST(request: Request) {
   });
   if (!profile) return NextResponse.json({ ok: false }, { status: 404 });
 
-  after(() => recordAnalyticsEvent(profile.id, parsed.data.event));
+  const address = clientAddress(request);
+  after(() => recordAnalyticsEvent(profile.id, parsed.data.event, parsed.data.pageKey, address));
   return new NextResponse(null, { status: 202 });
 }

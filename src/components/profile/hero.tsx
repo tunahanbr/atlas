@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { AvailabilityBadge } from "./availability-badge";
 import { Reveal } from "./reveal";
 import { initials } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 export function Hero({ profile }: { profile: PublicProfile }) {
-  const name = profile.user.name ?? profile.username;
+  const name = profile.displayName ?? profile.user.name ?? profile.username;
   const hasWork = profile.projects.length > 0;
   const primaryLabel =
     profile.availability === "AVAILABLE"
@@ -42,10 +43,12 @@ export function Hero({ profile }: { profile: PublicProfile }) {
 
         <div>
           <Reveal delay={0.05}>
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Independent professional
-            </p>
-            <h1 className="font-editorial mt-3 text-[2rem] leading-[1.02] font-normal tracking-[-0.025em] text-balance sm:text-[2.2rem]">
+            {profile.profileLabel ? (
+              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                {profile.profileLabel}
+              </p>
+            ) : null}
+            <h1 className={cn("font-editorial text-[2rem] leading-[1.02] font-normal tracking-[-0.025em] text-balance sm:text-[2.2rem]", profile.profileLabel && "mt-3")}>
               {name}
             </h1>
             {profile.headline ? (

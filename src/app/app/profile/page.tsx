@@ -37,6 +37,8 @@ export default async function ProfilePage() {
         <ProfileForm
           profile={{
             username: profile.username,
+            displayName: profile.displayName,
+            profileLabel: profile.profileLabel,
             headline: profile.headline,
             bio: profile.bio,
             location: profile.location,

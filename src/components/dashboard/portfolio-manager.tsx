@@ -1,248 +1,82 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp, GripVertical, Loader2, Pencil, Plus, Star } from "lucide-react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { ChevronDown, ChevronUp, GripVertical, Pencil, Plus, Star } from "lucide-react";
 
-import { upsertProject, deleteProject } from "@/server/actions/entities";
-import { useUpsert, DeleteButton, EmptyState } from "@/components/dashboard/shared";
+import { deleteProject } from "@/server/actions/entities";
+import { DeleteButton, EmptyState } from "@/components/dashboard/shared";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { MediaUploadField } from "@/components/dashboard/media-upload-field";
 import { useReorder } from "@/components/dashboard/use-reorder";
+import { ContentCollectionToolbar, type CollectionFilter } from "@/components/dashboard/content-collection-toolbar";
 
 type Project = {
   id: string;
-  slug: string;
   title: string;
   summary: string;
-  description: string | null;
-  imageUrl: string | null;
-  videoUrl: string | null;
-  repoUrl: string | null;
-  liveUrl: string | null;
-  technologies: string[];
   year: number | null;
   featured: boolean;
   published: boolean;
 };
 
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
-}
-
 export function PortfolioManager({ projects }: { projects: Project[] }) {
   const reorder = useReorder(projects, "projects");
-  const { open, setOpen, pending, submit } = useUpsert(upsertProject);
-  const [editing, setEditing] = useState<Project | null>(null);
-  const [slug, setSlug] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<CollectionFilter>("all");
+  const visible = useMemo(() => reorder.items.filter((project) => {
+    const matchesQuery = `${project.title} ${project.summary}`.toLowerCase().includes(query.trim().toLowerCase());
+    const matchesFilter = filter === "all" || (filter === "published" ? project.published : !project.published);
+    return matchesQuery && matchesFilter;
+  }), [filter, query, reorder.items]);
+  const counts = { all: projects.length, published: projects.filter((project) => project.published).length, draft: projects.filter((project) => !project.published).length };
 
-  function openNew() {
-    setEditing(null);
-    setSlug("");
-    setImageUrl("");
-    setOpen(true);
-  }
-
-  function openEdit(project: Project) {
-    setEditing(project);
-    setSlug(project.slug);
-    setImageUrl(project.imageUrl ?? "");
-    setOpen(true);
-  }
-
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const year = String(fd.get("year") ?? "").trim();
-    submit(editing?.id ?? null, {
-      title: fd.get("title"),
-      slug: String(fd.get("slug") ?? ""),
-      summary: fd.get("summary"),
-      description: fd.get("description"),
-      imageUrl,
-      videoUrl: fd.get("videoUrl"),
-      repoUrl: fd.get("repoUrl"),
-      liveUrl: fd.get("liveUrl"),
-      technologies: String(fd.get("technologies") ?? "")
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-      year: year ? parseInt(year, 10) : null,
-      featured: fd.get("featured") === "on",
-      published: fd.get("published") === "on",
-    });
-  }
+  const addButton = (
+    <Button render={<Link href="/app/portfolio/new" />} nativeButton={false}>
+      <Plus className="size-4" />
+      Add project
+    </Button>
+  );
 
   return (
     <>
-      {projects.length > 0 ? (
-        <div className="flex justify-end">
-          <Button onClick={openNew}>
-            <Plus className="size-4" />
-            Add project
-          </Button>
-        </div>
-      ) : null}
-
       {projects.length === 0 ? (
         <EmptyState
           title="Show the outcome, not only the artifact"
           description="One strong case study is enough to start. Explain the situation, your contribution and what changed because of the work."
         >
-          <Button onClick={openNew} variant="outline">
-            <Plus className="size-4" />
-            Write your first case study
-          </Button>
+          {addButton}
         </EmptyState>
       ) : (
-        <ul className="mt-6 divide-y rounded-xl border bg-card">
-          {reorder.items.map((project, index) => (
-            <li key={project.id} {...reorder.dragProps(project.id)} className="flex items-center gap-3 px-4 py-4">
+        <>
+        <ContentCollectionToolbar query={query} onQueryChange={setQuery} filter={filter} onFilterChange={setFilter} counts={counts}>{addButton}</ContentCollectionToolbar>
+        {visible.length ? <ul className="mt-4 divide-y rounded-md border bg-card/45">
+          {visible.map((project, index) => (
+            <li key={project.id} {...reorder.dragProps(project.id)} className="flex items-center gap-3 px-4 py-4 transition hover:bg-card/80">
               <GripVertical className="size-4 cursor-grab text-muted-foreground" aria-hidden />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="truncate font-medium tracking-tight">{project.title}</p>
-                  {project.featured ? (
-                    <Star className="size-3.5 fill-amber-400 text-amber-400" aria-label="Featured" />
-                  ) : null}
-                  {!project.published ? (
-                    <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                      Draft
-                    </span>
-                  ) : null}
+                  {project.featured ? <Star className="size-3.5 fill-amber-400 text-amber-400" aria-label="Featured" /> : null}
+                  {!project.published ? <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">Draft</span> : null}
+                  {project.published ? <span className="text-[10px] text-emerald-700 dark:text-emerald-300">Published</span> : null}
                 </div>
-                <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                  {project.summary}
-                </p>
+                <p className="mt-0.5 truncate text-sm text-muted-foreground">{project.summary}</p>
               </div>
-              <span className="hidden gap-0.5 sm:flex"><Button variant="ghost" size="icon" aria-label={`Move ${project.title} up`} disabled={index === 0 || reorder.pending} onClick={() => reorder.moveBy(project.id, -1)}><ChevronUp className="size-3.5" /></Button><Button variant="ghost" size="icon" aria-label={`Move ${project.title} down`} disabled={index === reorder.items.length - 1 || reorder.pending} onClick={() => reorder.moveBy(project.id, 1)}><ChevronDown className="size-3.5" /></Button></span>
-              {project.year ? (
-                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                  {project.year}
-                </span>
-              ) : null}
-              <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => openEdit(project)}>
+              <span className="hidden gap-0.5 sm:flex">
+                <Button variant="ghost" size="icon" aria-label={`Move ${project.title} up`} disabled={index === 0 || reorder.pending || filter !== "all" || Boolean(query)} onClick={() => reorder.moveBy(project.id, -1)}><ChevronUp className="size-3.5" /></Button>
+                <Button variant="ghost" size="icon" aria-label={`Move ${project.title} down`} disabled={index === visible.length - 1 || reorder.pending || filter !== "all" || Boolean(query)} onClick={() => reorder.moveBy(project.id, 1)}><ChevronDown className="size-3.5" /></Button>
+              </span>
+              {project.year ? <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{project.year}</span> : null}
+              <Button render={<Link href={`/app/portfolio/${project.id}`} />} nativeButton={false} variant="ghost" size="sm" aria-label={`Edit ${project.title}`}>
                 <Pencil className="size-4" />
+                <span className="hidden sm:inline">Edit</span>
               </Button>
               <DeleteButton id={project.id} action={deleteProject} label={project.title} />
             </li>
           ))}
-        </ul>
+        </ul> : <div className="mt-4 rounded-md border border-dashed px-6 py-12 text-center text-sm text-muted-foreground">No projects match this view.</div>}
+        </>
       )}
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[calc(100svh-2rem)] max-w-lg overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Edit project" : "New project"}</DialogTitle>
-            <DialogDescription>
-              Lead with what changed. The tools are supporting evidence, not the story.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  defaultValue={editing?.title}
-                  required
-                  maxLength={100}
-                  onChange={(e) => {
-                    if (!editing) setSlug(slugify(e.target.value));
-                  }}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="slug">Slug (URL)</Label>
-                <Input
-                  id="slug"
-                  name="slug"
-                  value={slug}
-                  onChange={(e) => setSlug(slugify(e.target.value))}
-                  required
-                  maxLength={80}
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="summary">Summary (one or two sentences)</Label>
-              <Textarea id="summary" name="summary" rows={2} defaultValue={editing?.summary} required maxLength={280} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="description">Case study (optional)</Label>
-              <Textarea
-                id="description"
-                name="description"
-                rows={4}
-                placeholder="Context, what you did, measurable result."
-                defaultValue={editing?.description ?? ""}
-              />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="liveUrl">Live demo URL</Label>
-                <Input id="liveUrl" name="liveUrl" type="url" placeholder="https://" defaultValue={editing?.liveUrl ?? ""} />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="repoUrl">Repository URL</Label>
-                <Input id="repoUrl" name="repoUrl" type="url" placeholder="https://github.com/…" defaultValue={editing?.repoUrl ?? ""} />
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <MediaUploadField id="project-image" label="Cover image" value={imageUrl} onChange={setImageUrl} />
-              <div className="space-y-1.5">
-                <Label htmlFor="videoUrl">Video URL</Label>
-                <Input id="videoUrl" name="videoUrl" type="url" placeholder="https://" defaultValue={editing?.videoUrl ?? ""} />
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="year">Year</Label>
-                <Input id="year" name="year" type="number" min="1990" max="2100" placeholder="2025" defaultValue={editing?.year ?? ""} />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="technologies">Technologies (comma-separated)</Label>
-                <Input
-                  id="technologies"
-                  name="technologies"
-                  placeholder="Next.js, PostgreSQL"
-                  defaultValue={editing?.technologies.join(", ")}
-                />
-              </div>
-            </div>
-            <div className="flex gap-6">
-              <label className="flex items-center gap-2 text-sm">
-                <Switch name="featured" defaultChecked={editing?.featured ?? false} />
-                Featured
-              </label>
-              <label className="flex items-center gap-2 text-sm">
-                <Switch name="published" defaultChecked={editing?.published ?? true} />
-                Published
-              </label>
-            </div>
-            <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-              {editing ? "Save changes" : "Create project"}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

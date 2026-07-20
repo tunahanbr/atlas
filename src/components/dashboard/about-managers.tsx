@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Pencil, Plus } from "lucide-react";
+import { Loader2, Pencil, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -31,13 +31,29 @@ import { Switch } from "@/components/ui/switch";
 export function SkillsForm({ skills }: { skills: { name: string; category: string | null }[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [value, setValue] = useState(
-    skills.map((s) => (s.category ? `${s.category}: ${s.name}` : s.name)).join("\n"),
-  );
+  const [items, setItems] = useState(skills.map((skill, index) => ({ ...skill, id: `${index}-${skill.name}` })));
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("");
+
+  function addSkill() {
+    const cleanName = name.trim();
+    const cleanCategory = category.trim();
+    if (!cleanName) return;
+    if (items.some((item) => item.name.toLowerCase() === cleanName.toLowerCase())) {
+      toast.error("This skill is already in your list");
+      return;
+    }
+    if (items.length >= 60) {
+      toast.error("You can add up to 60 skills");
+      return;
+    }
+    setItems((current) => [...current, { id: `${Date.now()}-${cleanName}`, name: cleanName, category: cleanCategory || null }]);
+    setName("");
+  }
 
   function save() {
     startTransition(async () => {
-      const result = await replaceSkills(value.split("\n"));
+      const result = await replaceSkills(items.map((item) => item.category ? `${item.category}: ${item.name}` : item.name));
       if (result.ok) {
         toast.success("Skills saved");
         router.refresh();
@@ -48,19 +64,56 @@ export function SkillsForm({ skills }: { skills: { name: string; category: strin
   }
 
   return (
-    <section className="rounded-xl border bg-card p-6">
-      <h2 className="font-medium tracking-tight">Skills & tech stack</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        One per line. Group with a prefix, e.g. <code className="text-xs">Frontend: React</code>
-      </p>
-      <Textarea
-        className="mt-4 font-mono text-sm"
-        rows={8}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder={"Languages: TypeScript\nFrameworks: Next.js\nInfrastructure: PostgreSQL"}
-      />
-      <div className="mt-4 flex justify-end">
+    <section className="rounded-md bg-card/45 p-6">
+      <h2 className="font-editorial text-lg">Skills & tech stack</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Add one skill at a time. Categories keep longer lists easy to scan on your profile.</p>
+
+      <div className="mt-5 grid gap-3 rounded-md border bg-background/40 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,.7fr)_auto] sm:items-end">
+        <div className="space-y-1.5">
+          <Label htmlFor="new-skill">Skill or technology</Label>
+          <Input
+            id="new-skill"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                addSkill();
+              }
+            }}
+            maxLength={40}
+            placeholder="e.g. React"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="skill-category">Category <span className="font-normal text-muted-foreground">(optional)</span></Label>
+          <Input id="skill-category" list="skill-categories" value={category} onChange={(event) => setCategory(event.target.value)} maxLength={40} placeholder="e.g. Frontend" />
+          <datalist id="skill-categories">
+            {["Frontend", "Backend", "Design", "Strategy", "Tools", "Languages"].map((option) => <option key={option} value={option} />)}
+          </datalist>
+        </div>
+        <Button type="button" onClick={addSkill} disabled={!name.trim()}><Plus className="size-4" />Add</Button>
+      </div>
+
+      {items.length ? (
+        <div className="mt-5 flex flex-wrap gap-2">
+          {items.map((item) => (
+            <span key={item.id} className="inline-flex items-center gap-1.5 rounded-full border bg-background px-3 py-1.5 text-sm">
+              {item.category ? <span className="text-xs text-muted-foreground">{item.category}</span> : null}
+              {item.category ? <span className="text-muted-foreground/50">·</span> : null}
+              <span>{item.name}</span>
+              <button type="button" onClick={() => setItems((current) => current.filter((skill) => skill.id !== item.id))} className="ml-0.5 rounded-full p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground" aria-label={`Remove ${item.name}`}>
+                <X className="size-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-5 rounded-md border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">No skills added yet. Start with the tools and capabilities most relevant to your services.</p>
+      )}
+
+      <div className="mt-5 flex items-center justify-between border-t pt-4">
+        <p className="text-xs text-muted-foreground">{items.length}/60 skills</p>
         <Button onClick={save} disabled={pending} variant="outline">
           {pending ? <Loader2 className="size-4 animate-spin" /> : null}
           Save skills
@@ -159,7 +212,7 @@ export function ExperienceManager({ items }: { items: ExperienceItem[] }) {
           <DialogHeader>
             <DialogTitle>{editing ? "Edit experience" : "Add experience"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form key={editing?.id ?? "new"} onSubmit={onSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="role">Role</Label>
@@ -278,7 +331,7 @@ export function CertificationsManager({ items }: { items: CertificationItem[] })
           <DialogHeader>
             <DialogTitle>{editing ? "Edit certification" : "Add certification"}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form key={editing?.id ?? "new"} onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="name">Name</Label>
               <Input id="name" name="name" defaultValue={editing?.name} required maxLength={120} />

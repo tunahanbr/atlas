@@ -127,12 +127,14 @@ describe("tenant isolation predicates", () => {
   });
 
   it("stores analytics as profile-scoped daily aggregates", async () => {
-    await recordAnalyticsEvent(firstProfileId, "PROFILE_VIEW");
-    await recordAnalyticsEvent(firstProfileId, "PROFILE_VIEW");
-    await recordAnalyticsEvent(firstProfileId, "PROJECT_CLICK");
+    await recordAnalyticsEvent(firstProfileId, "PROFILE_VIEW", "profile:integration", "192.0.2.10");
+    await recordAnalyticsEvent(firstProfileId, "PROFILE_VIEW", "profile:integration", "192.0.2.10");
+    await recordAnalyticsEvent(firstProfileId, "PROFILE_VIEW", "profile:integration", "192.0.2.11");
+    await recordAnalyticsEvent(firstProfileId, "SERVICE_CLICK", `service:${firstServiceId}`, "192.0.2.10");
 
     const analytics = await getAnalyticsSummary(firstProfileId, 7);
-    expect(analytics.totals).toMatchObject({ profileViews: 2, projectClicks: 1 });
+    expect(analytics.totals).toMatchObject({ profileViews: 2, serviceClicks: 1 });
+    expect(analytics.topServices[0]).toMatchObject({ id: firstServiceId, clicks: 1 });
     expect(analytics.series).toHaveLength(7);
   });
 });

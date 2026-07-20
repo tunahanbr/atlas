@@ -76,6 +76,8 @@ model Profile {
   id               String       @id @default(cuid())
   userId           String       @unique
   username         String       @unique
+  displayName      String?
+  profileLabel     String       @default("Independent professional")
   headline         String?
   bio              String?      @db.Text
   location         String?
@@ -92,16 +94,19 @@ model Profile {
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
 
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  services       Service[]
-  projects       Project[]
-  testimonials   Testimonial[]
-  experiences    Experience[]
-  skills         Skill[]
-  certifications Certification[]
-  socials        SocialLink[]
-  analytics      AnalyticsDaily[]
-  domains        CustomDomain[]
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services            Service[]
+  projects            Project[]
+  testimonials        Testimonial[]
+  testimonialRequests TestimonialRequest[]
+  experiences         Experience[]
+  skills              Skill[]
+  certifications      Certification[]
+  socials             SocialLink[]
+  analytics           AnalyticsDaily[]
+  analyticsEvents     AnalyticsEventDaily[]
+  analyticsVisitors   AnalyticsUniqueVisitor[]
+  domains             CustomDomain[]
 }
 
 // Privacy-friendly daily aggregates. Atlas never stores visitor identifiers,
@@ -121,6 +126,40 @@ model AnalyticsDaily {
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@unique([profileId, date])
+  @@index([profileId, date])
+}
+
+// Per-target rollups power "top project" and "top service" analytics.
+model AnalyticsEventDaily {
+  id          String   @id @default(cuid())
+  profileId   String
+  date        DateTime @db.Date
+  event       String
+  pageKey     String
+  uniqueCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date, event, pageKey])
+  @@index([profileId, date])
+  @@index([profileId, event, pageKey])
+}
+
+// Stores only a rotating one-way hash. Raw IP addresses never reach the database.
+model AnalyticsUniqueVisitor {
+  id          String   @id @default(cuid())
+  profileId   String
+  date        DateTime @db.Date
+  event       String
+  pageKey     String
+  visitorHash String
+  createdAt   DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date, event, pageKey, visitorHash])
   @@index([profileId, date])
 }
 
@@ -170,23 +209,24 @@ model Service {
 }
 
 model Project {
-  id           String    @id @default(cuid())
+  id           String   @id @default(cuid())
   profileId    String
   slug         String
   title        String
   summary      String
-  description  String?   @db.Text
+  description  String?  @db.Text
+  accentColor  String   @default("stone")
   imageUrl     String?
   videoUrl     String?
   repoUrl      String?
   liveUrl      String?
   technologies String[]
   year         Int?
-  featured     Boolean   @default(false)
-  published    Boolean   @default(true)
-  order        Int       @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  featured     Boolean  @default(false)
+  published    Boolean  @default(true)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
@@ -201,11 +241,24 @@ model Testimonial {
   authorCompany String?
   avatarUrl     String?
   content       String   @db.Text
+  verified      Boolean  @default(false)
   published     Boolean  @default(true)
   order         Int      @default(0)
   createdAt     DateTime @default(now())
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model TestimonialRequest {
+  id          String    @id @default(cuid())
+  profileId   String
+  token       String    @unique
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, createdAt])
 }
 
 model Experience {

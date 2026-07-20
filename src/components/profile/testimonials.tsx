@@ -1,4 +1,5 @@
 import type { PublicProfile } from "@/server/queries";
+import { BadgeCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { initials } from "@/lib/format";
 import { Section } from "./section";
@@ -26,7 +27,10 @@ export function Testimonials({
                     <AvatarFallback className="text-xs">{initials(t.authorName)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-xs font-medium">{t.authorName}</p>
+                    <p className="flex items-center gap-1.5 text-xs font-medium">
+                      {t.authorName}
+                      {t.verified ? <span className="inline-flex items-center gap-1 text-[10px] font-normal text-emerald-700 dark:text-emerald-300" title="Submitted through a private client request link"><BadgeCheck className="size-3" />Verified client</span> : null}
+                    </p>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
                       {[t.authorRole, t.authorCompany].filter(Boolean).join(", ")}
                     </p>

@@ -58,6 +58,7 @@ export function Services({
                 <AnalyticsLink
                   username={username}
                   event="SERVICE_CLICK"
+                  pageKey={`service:${service.id}`}
                   href="#contact"
                   className="group/link mt-5 inline-flex items-center gap-1.5 border-b border-brand/35 pb-0.5 text-xs font-medium text-brand transition-colors hover:border-brand"
                 >

@@ -10,6 +10,7 @@ export const RESERVED_USERNAMES = new Set([
   "legal",
   "privacy",
   "terms",
+  "testimonial",
   "admin",
   "support",
   "help",

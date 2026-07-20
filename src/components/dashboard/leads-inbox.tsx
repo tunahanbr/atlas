@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Loader2, Mail, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, CircleCheck, Loader2, Mail, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -36,11 +36,20 @@ type Lead = {
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   NEW: "New",
-  READ: "Contacted",
-  QUALIFIED: "Qualified",
+  READ: "Replied",
+  QUALIFIED: "Good fit",
   WON: "Won",
-  LOST: "Lost",
+  LOST: "Not a fit",
   ARCHIVED: "Archived",
+};
+
+const STATUS_HELP: Record<LeadStatus, string> = {
+  NEW: "Needs your first reply",
+  READ: "You replied; decide whether it fits",
+  QUALIFIED: "Worth pursuing; agree on the next step",
+  WON: "The inquiry became paid work",
+  LOST: "You decided not to pursue it",
+  ARCHIVED: "Hidden from the active workflow",
 };
 
 const TABS: Record<string, LeadStatus[]> = {
@@ -68,13 +77,27 @@ export function LeadsInbox({ leads, username }: { leads: Lead[]; username: strin
   return (
     <>
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="max-w-full overflow-x-auto">
-          <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
+        <TabsList className="w-full max-w-full overflow-hidden sm:w-fit">
+          <TabsTrigger value="pipeline">Active</TabsTrigger>
           <TabsTrigger value="won">Won</TabsTrigger>
-          <TabsTrigger value="lost">Lost</TabsTrigger>
+          <TabsTrigger value="lost">Not a fit</TabsTrigger>
           <TabsTrigger value="archived">Archived</TabsTrigger>
         </TabsList>
       </Tabs>
+
+      {tab === "pipeline" ? (
+        <div className="mt-4 flex flex-col gap-3 rounded-md border bg-card/35 p-4 sm:flex-row sm:items-center sm:gap-2" aria-label="Lead workflow">
+          <p className="shrink-0 text-xs font-medium text-muted-foreground">How this works</p>
+          {(["NEW", "READ", "QUALIFIED", "WON"] as LeadStatus[]).map((status, index) => (
+            <div key={status} className="flex items-center gap-2 text-xs">
+              {index > 0 ? <ArrowRight className="hidden size-3 text-muted-foreground sm:block" /> : null}
+              <span className="rounded-full bg-background px-2.5 py-1 font-medium">{STATUS_LABELS[status]}</span>
+              <span className="text-muted-foreground sm:hidden">{STATUS_HELP[status]}</span>
+            </div>
+          ))}
+          <p className="ml-auto hidden max-w-48 text-right text-[11px] leading-4 text-muted-foreground lg:block">Update the status so every inquiry has a clear next action.</p>
+        </div>
+      ) : null}
 
       {visible.length === 0 ? (
         <div className="mt-6 flex flex-col items-center gap-2 rounded-md bg-card/35 px-6 py-14 text-center">
@@ -153,17 +176,20 @@ function LeadCard({ lead }: { lead: Lead }) {
           {followUp ? <p className="mt-1 text-xs text-muted-foreground">Follow up {followUp}</p> : null}
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <select
-            aria-label={`Status for ${lead.name}`}
-            value={lead.status}
-            disabled={pending}
-            onChange={(event) => run(() => updateLeadStatus(lead.id, event.target.value as LeadStatus))}
-            className="h-8 rounded-lg border bg-background px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            Move to
+            <select
+              aria-label={`Move ${lead.name} to status`}
+              value={lead.status}
+              disabled={pending}
+              onChange={(event) => run(() => updateLeadStatus(lead.id, event.target.value as LeadStatus), `Moved to ${STATUS_LABELS[event.target.value as LeadStatus]}`)}
+              className="h-8 rounded-lg border bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
           <span className="text-xs tabular-nums text-muted-foreground">
             {new Date(lead.createdAt).toLocaleDateString("en", { month: "short", day: "numeric" })}
           </span>
@@ -174,13 +200,18 @@ function LeadCard({ lead }: { lead: Lead }) {
         {lead.message}
       </p>
 
+      <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <CircleCheck className="size-3.5" />
+        {STATUS_HELP[lead.status]}
+      </p>
+
       <div className="mt-4 flex flex-wrap gap-2">
-        <Button render={<a href={`mailto:${lead.email}`} />} nativeButton={false} size="sm" className="rounded-lg">
+        <Button render={<a href={`mailto:${lead.email}`} onClick={() => { if (lead.status === "NEW") run(() => updateLeadStatus(lead.id, "READ"), "Marked as replied"); }} />} nativeButton={false} size="sm" className="rounded-lg">
           <Mail className="size-4" /> Reply
         </Button>
         <Button variant="outline" size="sm" className="rounded-lg" onClick={() => setExpanded((value) => !value)}>
           {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-          CRM details
+          Next steps & notes
           {lead.notes.length > 0 ? ` (${lead.notes.length})` : ""}
         </Button>
       </div>
@@ -204,6 +235,10 @@ function LeadCard({ lead }: { lead: Lead }) {
               );
             }}
           >
+            <div>
+              <p className="text-sm font-medium">Plan the next step</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">Add an estimated value and a follow-up date so promising conversations do not go quiet.</p>
+            </div>
             <div className="grid grid-cols-[1fr_6rem] gap-2">
               <div>
                 <label htmlFor={`value-${lead.id}`} className="text-xs font-medium">Deal value</label>
@@ -228,6 +263,10 @@ function LeadCard({ lead }: { lead: Lead }) {
           </form>
 
           <div>
+            <div className="mb-3">
+              <p className="text-sm font-medium">Private notes</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">Only you can see these. Capture requirements, call outcomes or what to ask next.</p>
+            </div>
             <NoteForm leadId={lead.id} pending={pending} run={run} />
             {lead.notes.length > 0 ? (
               <ul className="mt-3 space-y-2">

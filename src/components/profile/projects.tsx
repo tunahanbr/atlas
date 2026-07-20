@@ -26,6 +26,7 @@ export function Projects({
               <AnalyticsLink
                 username={username}
                 event="PROJECT_CLICK"
+                pageKey={`project:${project.id}`}
                 href={`${basePath}/work/${project.slug}${preview ? "?preview=1" : ""}`}
                 className="group flex items-start justify-between gap-5 rounded-md px-3 py-5 transition-[background-color,transform] duration-500 hover:translate-x-1 hover:bg-card/55"
               >

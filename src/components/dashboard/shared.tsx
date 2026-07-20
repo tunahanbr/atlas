@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import type { ActionResult } from "@/server/actions/profile";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Wraps an upsert action: shows toasts, closes dialog on success, refreshes.
 export function useUpsert(action: (id: string | null, input: unknown) => Promise<ActionResult>) {
@@ -41,34 +42,27 @@ export function DeleteButton({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const confirmed = useRef(false);
+  const [open, setOpen] = useState(false);
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      aria-label={`Delete ${label}`}
-      disabled={pending}
-      onClick={() => {
-        if (!confirmed.current) {
-          confirmed.current = true;
-          toast(`Click again to delete ${label}`, { icon: "⚠️" });
-          setTimeout(() => (confirmed.current = false), 3000);
-          return;
-        }
-        startTransition(async () => {
-          const result = await action(id);
-          if (result.ok) {
-            toast.success("Deleted");
-            router.refresh();
-          } else {
-            toast.error(result.error ?? "Could not delete");
-          }
-        });
-      }}
-    >
-      {pending ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-    </Button>
+    <>
+      <Button variant="ghost" size="icon" aria-label={`Delete ${label}`} disabled={pending} onClick={() => setOpen(true)}>
+        {pending ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>Delete “{label}”?</DialogTitle><DialogDescription>This removes it from your dashboard and public profile. This action cannot be undone.</DialogDescription></DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="button" variant="destructive" disabled={pending} onClick={() => startTransition(async () => {
+              const result = await action(id);
+              if (result.ok) { toast.success("Deleted"); setOpen(false); router.refresh(); }
+              else toast.error(result.error ?? "Could not delete");
+            })}>{pending ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}Delete</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

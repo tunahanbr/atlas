@@ -56,6 +56,7 @@ for self-hosters that do not configure Supabase.
 
 ```bash
 export AUTH_SECRET=$(openssl rand -base64 32)
+export ANALYTICS_SALT=$(openssl rand -base64 32)
 export NEXT_PUBLIC_SUPABASE_URL=<your-project-url>
 export NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<your-publishable-key>
 export SUPABASE_SERVICE_ROLE_KEY=<your-server-only-service-role-key>
@@ -98,8 +99,9 @@ Users add domains under Settings, create the displayed CNAME and TXT records,
 then click Verify. Your reverse proxy must terminate TLS for every connected
 domain and forward the original `Host` header to Atlas.
 
-Analytics are stored as daily aggregate counters only. Atlas does not persist
-visitor IPs, cookies, user agents or raw analytics events.
+Analytics count each visitor once per event, target and UTC day. Atlas creates a
+rotating one-way hash in memory and discards the source address immediately; raw
+IP addresses, cookies and cross-day visitor profiles are never stored.
 
 ### Backups and deletion
 

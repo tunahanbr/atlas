@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
 import { submitLead, type LeadFormState } from "@/server/actions/leads";
@@ -20,7 +20,21 @@ import {
 const initialState: LeadFormState = { status: "idle" };
 
 export function LeadForm({ username }: { username: string }) {
-  const [state, action, pending] = useActionState(submitLead, initialState);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [budget, setBudget] = useState<string | null>(null);
+  const [state, action, pending] = useActionState(
+    async (previousState: LeadFormState, formData: FormData) => {
+      const nextState = await submitLead(previousState, formData);
+
+      if (nextState.status === "success") {
+        formRef.current?.reset();
+        setBudget(null);
+      }
+
+      return nextState;
+    },
+    initialState,
+  );
 
   if (state.status === "success") {
     return (
@@ -49,7 +63,7 @@ export function LeadForm({ username }: { username: string }) {
           Usually replies in 1–2 days
         </p>
       </div>
-      <form action={action} className="rounded-md bg-card/45 p-6 sm:p-8">
+      <form ref={formRef} action={action} className="rounded-md bg-card/45 p-6 sm:p-8">
       <input type="hidden" name="username" value={username} />
       <div className="absolute -left-[10000px] size-px overflow-hidden" aria-hidden="true">
         <label htmlFor="lead-contact-url">Leave this field empty</label>
@@ -80,7 +94,7 @@ export function LeadForm({ username }: { username: string }) {
       </div>
       <div className="mt-4 space-y-1.5">
         <Label htmlFor="lead-budget">Budget (optional)</Label>
-        <Select name="budget">
+        <Select name="budget" value={budget} onValueChange={setBudget}>
           <SelectTrigger id="lead-budget" className="w-full">
             <SelectValue placeholder="Select a range" />
           </SelectTrigger>

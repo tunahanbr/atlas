@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? `${process.env.NODE_ENV === "production" ? "https" : "http"}://${customHost}`
     : `/${profile.username}`;
 
-  const name = profile.user.name ?? profile.username;
+  const name = profile.displayName ?? profile.user.name ?? profile.username;
   const title = profile.seoTitle ?? `${name} — ${profile.headline ?? profile.username}`;
   const description =
     profile.seoDescription ?? profile.headline ?? `Contact ${name} via Atlas.`;
@@ -64,7 +64,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
     ? `${process.env.NODE_ENV === "production" ? "https" : "http"}://${customHost}`
     : `/${profile.username}`;
 
-  const name = profile.user.name ?? profile.username;
+  const name = profile.displayName ?? profile.user.name ?? profile.username;
   const profileTheme =
     profile.theme === "light" || profile.theme === "dark" ? profile.theme : "system";
 

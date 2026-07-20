@@ -1,31 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp, GripVertical, Loader2, Pencil, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { ChevronDown, ChevronUp, GripVertical, Pencil, Plus } from "lucide-react";
 
-import { upsertService, deleteService } from "@/server/actions/entities";
+import { deleteService } from "@/server/actions/entities";
 import { formatDelivery, formatPrice } from "@/lib/format";
-import { useUpsert, DeleteButton, EmptyState } from "@/components/dashboard/shared";
+import { DeleteButton, EmptyState } from "@/components/dashboard/shared";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { useReorder } from "@/components/dashboard/use-reorder";
+import { ContentCollectionToolbar, type CollectionFilter } from "@/components/dashboard/content-collection-toolbar";
 
 type Service = {
   id: string;
@@ -41,186 +25,49 @@ type Service = {
 
 export function ServicesManager({ services }: { services: Service[] }) {
   const reorder = useReorder(services, "services");
-  const { open, setOpen, pending, submit } = useUpsert(upsertService);
-  const [editing, setEditing] = useState<Service | null>(null);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<CollectionFilter>("all");
+  const visible = useMemo(() => reorder.items.filter((service) => {
+    const matchesQuery = `${service.title} ${service.description}`.toLowerCase().includes(query.trim().toLowerCase());
+    const matchesFilter = filter === "all" || (filter === "published" ? service.published : !service.published);
+    return matchesQuery && matchesFilter;
+  }), [filter, query, reorder.items]);
+  const counts = {
+    all: services.length,
+    published: services.filter((service) => service.published).length,
+    draft: services.filter((service) => !service.published).length,
+  };
+  const addButton = <Button render={<Link href="/app/services/new" />} nativeButton={false}><Plus className="size-4" />New service</Button>;
 
-  function openNew() {
-    setEditing(null);
-    setOpen(true);
-  }
-
-  function openEdit(service: Service) {
-    setEditing(service);
-    setOpen(true);
-  }
-
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const priceEuros = String(fd.get("price") ?? "").trim();
-    const delivery = String(fd.get("deliveryDays") ?? "").trim();
-    submit(editing?.id ?? null, {
-      title: fd.get("title"),
-      description: fd.get("description"),
-      priceType: fd.get("priceType"),
-      priceCents:
-        fd.get("priceType") === "ON_REQUEST" || !priceEuros
-          ? null
-          : Math.round(parseFloat(priceEuros) * 100),
-      currency: String(fd.get("currency") || "EUR").toUpperCase(),
-      deliveryDays: delivery ? parseInt(delivery, 10) : null,
-      technologies: String(fd.get("technologies") ?? "")
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-      published: fd.get("published") === "on",
-    });
+  if (services.length === 0) {
+    return <EmptyState title="Turn one repeat request into a clear offer" description="Start with a problem clients already ask you to solve. Give it a concrete outcome, timeline, and price signal.">{addButton}</EmptyState>;
   }
 
   return (
     <>
-      {services.length > 0 ? (
-        <div className="flex justify-end">
-          <Button onClick={openNew}>
-            <Plus className="size-4" />
-            Add service
-          </Button>
-        </div>
-      ) : null}
-
-      {services.length === 0 ? (
-        <EmptyState
-          title="Turn one repeat request into a clear offer"
-          description="Start with a problem clients already ask you to solve. Give it a concrete outcome, a realistic timeline and a price signal."
-        >
-          <Button onClick={openNew} variant="outline">
-            <Plus className="size-4" />
-            Create your first offer
-          </Button>
-        </EmptyState>
-      ) : (
-        <ul className="mt-6 divide-y rounded-xl border bg-card">
-          {reorder.items.map((service, index) => (
-            <li key={service.id} {...reorder.dragProps(service.id)} className="flex items-center gap-3 px-4 py-4">
-              <GripVertical className="size-4 cursor-grab text-muted-foreground" aria-hidden />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate font-medium tracking-tight">{service.title}</p>
-                  {!service.published ? (
-                    <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                      Draft
-                    </span>
-                  ) : null}
+      <ContentCollectionToolbar query={query} onQueryChange={setQuery} filter={filter} onFilterChange={setFilter} counts={counts}>{addButton}</ContentCollectionToolbar>
+      {visible.length ? (
+        <ul className="mt-4 grid gap-3 md:grid-cols-2">
+          {visible.map((service, index) => (
+            <li key={service.id} {...reorder.dragProps(service.id)} className="group rounded-md border bg-card/45 p-4 transition hover:border-foreground/20 hover:bg-card/70">
+              <div className="flex items-start gap-3">
+                <GripVertical className="mt-0.5 size-4 cursor-grab text-muted-foreground/60" aria-hidden />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2"><h2 className="truncate font-medium">{service.title}</h2><span className={service.published ? "text-[10px] text-emerald-700 dark:text-emerald-300" : "text-[10px] text-muted-foreground"}>{service.published ? "Published" : "Draft"}</span></div>
+                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">{service.description}</p>
+                  <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground"><span>{formatPrice(service.priceType, service.priceCents, service.currency)}</span>{service.deliveryDays ? <span>{formatDelivery(service.deliveryDays)}</span> : null}<span>{service.technologies.length} tags</span></div>
                 </div>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  {formatPrice(service.priceType, service.priceCents, service.currency)}
-                  {service.deliveryDays
-                    ? ` · ${formatDelivery(service.deliveryDays)}`
-                    : ""}
-                </p>
               </div>
-              <span className="hidden gap-0.5 sm:flex"><Button variant="ghost" size="icon" aria-label={`Move ${service.title} up`} disabled={index === 0 || reorder.pending} onClick={() => reorder.moveBy(service.id, -1)}><ChevronUp className="size-3.5" /></Button><Button variant="ghost" size="icon" aria-label={`Move ${service.title} down`} disabled={index === reorder.items.length - 1 || reorder.pending} onClick={() => reorder.moveBy(service.id, 1)}><ChevronDown className="size-3.5" /></Button></span>
-              <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => openEdit(service)}>
-                <Pencil className="size-4" />
-              </Button>
-              <DeleteButton id={service.id} action={deleteService} label={service.title} />
+              <div className="mt-4 flex items-center justify-end gap-1 border-t pt-3">
+                <Button variant="ghost" size="icon-sm" aria-label={`Move ${service.title} up`} disabled={index === 0 || reorder.pending || filter !== "all" || Boolean(query)} onClick={() => reorder.moveBy(service.id, -1)}><ChevronUp /></Button>
+                <Button variant="ghost" size="icon-sm" aria-label={`Move ${service.title} down`} disabled={index === visible.length - 1 || reorder.pending || filter !== "all" || Boolean(query)} onClick={() => reorder.moveBy(service.id, 1)}><ChevronDown /></Button>
+                <Button render={<Link href={`/app/services/${service.id}`} />} nativeButton={false} variant="ghost" size="sm"><Pencil />Edit</Button>
+                <DeleteButton id={service.id} action={deleteService} label={service.title} />
+              </div>
             </li>
           ))}
         </ul>
-      )}
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[calc(100svh-2rem)] max-w-lg overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Edit service" : "New service"}</DialogTitle>
-            <DialogDescription>
-              Make it easy for the right client to recognize their problem and take the next step.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="title">Offer title</Label>
-              <Input id="title" name="title" defaultValue={editing?.title} required maxLength={100} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="description">What the client gets</Label>
-              <Textarea
-                id="description"
-                name="description"
-                rows={4}
-                defaultValue={editing?.description}
-                required
-              />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="priceType">Pricing</Label>
-                <Select name="priceType" defaultValue={editing?.priceType ?? "STARTING_AT"}>
-                  <SelectTrigger id="priceType">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="STARTING_AT">Starting at</SelectItem>
-                    <SelectItem value="FIXED">Fixed price</SelectItem>
-                    <SelectItem value="ON_REQUEST">On request</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="price">Price</Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="4500"
-                  defaultValue={editing?.priceCents ? editing.priceCents / 100 : ""}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="currency">Currency</Label>
-                <Input
-                  id="currency"
-                  name="currency"
-                  defaultValue={editing?.currency ?? "EUR"}
-                  maxLength={3}
-                />
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="deliveryDays">Delivery time (days)</Label>
-                <Input
-                  id="deliveryDays"
-                  name="deliveryDays"
-                  type="number"
-                  min="1"
-                  placeholder="14"
-                  defaultValue={editing?.deliveryDays ?? ""}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="technologies">Expertise tags (comma-separated)</Label>
-                <Input
-                  id="technologies"
-                  name="technologies"
-                  placeholder="Next.js, PostgreSQL"
-                  defaultValue={editing?.technologies.join(", ")}
-                />
-              </div>
-            </div>
-            <label className="flex items-center gap-2 text-sm">
-              <Switch name="published" defaultChecked={editing?.published ?? true} />
-              Published
-            </label>
-            <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-              {editing ? "Save changes" : "Create service"}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+      ) : <div className="mt-4 rounded-md border border-dashed px-6 py-12 text-center text-sm text-muted-foreground">No services match this view.</div>}
     </>
   );
 }

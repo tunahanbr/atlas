@@ -11,8 +11,18 @@ import { AnalyticsPageView } from "@/components/profile/analytics-tracker";
 import { ProfileNav } from "@/components/profile/profile-nav";
 import { ProfileTheme } from "@/components/profile/profile-theme";
 import { auth } from "@/auth";
+import { MarkdownContent } from "@/components/profile/markdown-content";
+import { cn } from "@/lib/utils";
 
 type Props = { params: Promise<{ username: string; slug: string }>; searchParams: Promise<{ preview?: string }> };
+
+const ACCENT_CLASS: Record<string, string> = {
+  stone: "bg-stone-500",
+  sage: "bg-emerald-600",
+  blue: "bg-sky-600",
+  plum: "bg-fuchsia-700",
+  amber: "bg-amber-500",
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username, slug } = await params;
@@ -46,7 +56,7 @@ export default async function ProjectPage({ params, searchParams }: Props) {
   const customHost = (await headers()).get("x-atlas-custom-host");
   const profileBasePath = customHost ? "" : `/${project.profile.username}`;
 
-  const ownerName = project.profile.user.name ?? project.profile.username;
+  const ownerName = project.profile.displayName ?? project.profile.user.name ?? project.profile.username;
   const previewQuery = isOwnerPreview ? "?preview=1" : "";
   const contactHref = `${profileBasePath || "/"}${previewQuery}#contact`;
   const workHref = `${profileBasePath || "/"}${previewQuery}#work`;
@@ -69,8 +79,8 @@ export default async function ProjectPage({ params, searchParams }: Props) {
         event="PROJECT_VIEW"
         pageKey={`project:${project.id}`}
       /> : null}
-      <main className="mx-auto w-full max-w-3xl flex-1 px-5 pt-28 pb-16 sm:px-6 sm:pt-32">
-        <article>
+      <main className="mx-auto w-full max-w-3xl min-w-0 flex-1 overflow-x-clip px-5 pt-28 pb-16 sm:px-6 sm:pt-32">
+        <article className="min-w-0">
           <Reveal>
             <Link
               href={workHref}
@@ -82,15 +92,16 @@ export default async function ProjectPage({ params, searchParams }: Props) {
           </Reveal>
 
           <Reveal delay={0.05}>
-            <header className="mt-10 grid gap-5 sm:grid-cols-[1fr_auto] sm:items-start">
-              <div>
+            <header className="mt-10 grid min-w-0 gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+              <div className="min-w-0">
+                <div className={cn("mb-7 h-1 w-12 rounded-full", ACCENT_CLASS[project.accentColor] ?? ACCENT_CLASS.stone)} />
                 <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
                   Case study
                 </p>
-                <h1 className="font-editorial mt-3 text-[2.35rem] leading-[1.02] tracking-[-0.035em] text-balance sm:text-[3rem]">
+                <h1 className="font-editorial mt-3 text-[2.35rem] leading-[1.02] tracking-[-0.035em] text-balance [overflow-wrap:anywhere] sm:text-[3rem]">
                   {project.title}
                 </h1>
-                <p className="mt-5 max-w-2xl text-base leading-[1.75] text-quiet text-pretty sm:text-lg">
+                <p className="mt-5 max-w-2xl text-base leading-[1.75] text-quiet text-pretty [overflow-wrap:anywhere] sm:text-lg">
                   {project.summary}
                 </p>
               </div>
@@ -136,15 +147,21 @@ export default async function ProjectPage({ params, searchParams }: Props) {
         </Reveal>
       ) : null}
 
+      {project.imageUrl ? (
+        <Reveal delay={0.15}>
+          {/* User-configured hosts cannot be enumerated at build time. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={project.imageUrl}
+            alt={`${project.title} cover`}
+            className="mt-12 aspect-[16/9] w-full rounded-md object-cover"
+          />
+        </Reveal>
+      ) : null}
+
       {project.description ? (
         <Reveal delay={0.15}>
-          <div className="mt-12 max-w-2xl space-y-5">
-            {project.description.split(/\n\s*\n/).map((paragraph, i) => (
-              <p key={i} className="font-editorial text-lg leading-[1.7] text-quiet text-pretty first:text-foreground">
-                {paragraph}
-              </p>
-            ))}
-          </div>
+          <MarkdownContent content={project.description} className="mt-12 max-w-2xl" />
         </Reveal>
       ) : null}
 

@@ -16,10 +16,12 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", use: { ...devices["iPhone 13"], browserName: "chromium" } },
   ],
-  webServer: {
-    command: "pnpm dev --port 3100",
-    url: "http://localhost:3100",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
+    ? undefined
+    : {
+        command: "pnpm dev --port 3100",
+        url: "http://localhost:3100",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
 });

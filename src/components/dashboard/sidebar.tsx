@@ -10,6 +10,7 @@ import {
   FolderKanban,
   Inbox,
   LayoutDashboard,
+  LoaderCircle,
   Menu,
   MessageSquareQuote,
   Palette,
@@ -120,6 +121,7 @@ function SidebarContent({
   onNavigate,
 }: SidebarProps & { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   return (
     <>
@@ -156,7 +158,11 @@ function SidebarContent({
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      onClick={onNavigate}
+                      prefetch
+                      onClick={() => {
+                        if (!active) setPendingHref(item.href);
+                        onNavigate?.();
+                      }}
                       aria-current={active ? "page" : undefined}
                       className={cn(
                         "flex items-center gap-2.5 rounded-md border-l-2 border-transparent px-2 py-2 text-sm transition-[color,background-color,border-color] duration-300",
@@ -167,7 +173,9 @@ function SidebarContent({
                     >
                       <item.icon className="size-3.5" strokeWidth={1.6} />
                       <span className="flex-1">{item.label}</span>
-                      {item.badge && newLeads > 0 ? (
+                      {pendingHref === item.href && !active ? (
+                        <LoaderCircle className="size-3.5 animate-spin text-brand" aria-label="Loading" />
+                      ) : item.badge && newLeads > 0 ? (
                         <span className="rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-semibold leading-none text-brand-foreground">
                           {newLeads}
                         </span>

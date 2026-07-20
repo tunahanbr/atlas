@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -9,6 +10,7 @@ import {
   serviceSchema,
   projectSchema,
   testimonialSchema,
+  testimonialSubmissionSchema,
   experienceSchema,
   certificationSchema,
   skillSchema,
@@ -134,6 +136,54 @@ export async function deleteTestimonial(id: string): Promise<ActionResult> {
   const profile = await requireProfile();
   await db.testimonial.delete({ where: { id, profileId: profile.id } });
   revalidate(profile.username);
+  return { ok: true };
+}
+
+export async function createTestimonialRequest(): Promise<ActionResult & { token?: string }> {
+  const profile = await requireProfile();
+  const token = randomBytes(24).toString("base64url");
+  await db.testimonialRequest.create({ data: { profileId: profile.id, token } });
+  return { ok: true, token };
+}
+
+export async function submitTestimonialRequest(token: string, input: unknown): Promise<ActionResult> {
+  if (!/^[A-Za-z0-9_-]{32}$/.test(token)) return { ok: false, error: "This request link is invalid" };
+  const parsed = testimonialSubmissionSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
+
+  const request = await db.testimonialRequest.findUnique({
+    where: { token },
+    include: { profile: { select: { username: true } } },
+  });
+  if (!request || request.submittedAt) return { ok: false, error: "This request link has already been used or is no longer valid" };
+
+  try {
+    await db.$transaction(async (tx) => {
+      const claimed = await tx.testimonialRequest.updateMany({
+        where: { id: request.id, submittedAt: null },
+        data: { submittedAt: new Date() },
+      });
+      if (claimed.count !== 1) throw new Error("This request link has already been used");
+      const count = await tx.testimonial.count({ where: { profileId: request.profileId } });
+      await tx.testimonial.create({
+        data: {
+          profileId: request.profileId,
+          authorName: parsed.data.authorName,
+          authorRole: parsed.data.authorRole || null,
+          authorCompany: parsed.data.authorCompany || null,
+          content: parsed.data.content,
+          verified: true,
+          published: false,
+          order: count,
+        },
+      });
+    });
+  } catch (error) {
+    return fail(error);
+  }
+
+  revalidatePath("/app/testimonials");
+  revalidatePath(`/${request.profile.username}`);
   return { ok: true };
 }
 

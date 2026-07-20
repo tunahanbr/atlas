@@ -154,6 +154,49 @@
   .hairline {
     border-color: color-mix(in oklch, var(--foreground) 16%, transparent);
   }
+
+  .case-study-markdown {
+    @apply space-y-5;
+    color: color-mix(in oklch, var(--foreground) 62%, transparent);
+  }
+
+  .case-study-markdown h2 {
+    @apply mt-10 text-xl leading-tight tracking-tight text-foreground first:mt-0 sm:text-2xl;
+    font-family: var(--font-editorial), Georgia, serif;
+  }
+
+  .case-study-markdown h3,
+  .case-study-markdown h4 {
+    @apply mt-8 text-lg leading-tight text-foreground sm:text-xl;
+    font-family: var(--font-editorial), Georgia, serif;
+  }
+
+  .case-study-markdown p,
+  .case-study-markdown li,
+  .case-study-markdown blockquote {
+    @apply text-[15px] leading-7 sm:text-base;
+  }
+
+  .case-study-markdown ul {
+    @apply list-disc space-y-2 pl-6;
+  }
+
+  .case-study-markdown blockquote {
+    @apply border-l-2 pl-5 italic;
+    font-family: var(--font-editorial), Georgia, serif;
+  }
+
+  .case-study-markdown a {
+    @apply underline decoration-foreground/30 underline-offset-4 hover:decoration-foreground;
+  }
+
+  .case-study-markdown code:not(pre code) {
+    @apply rounded bg-secondary px-1.5 py-0.5 font-mono text-[.9em] text-foreground;
+  }
+
+  .case-study-markdown pre {
+    @apply max-w-full overflow-x-auto rounded-md bg-secondary p-4 text-sm leading-6;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

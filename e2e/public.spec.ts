@@ -24,6 +24,9 @@ test("demo profile and case study remain usable on narrow screens", async ({ pag
   await expect(project).toBeVisible();
   await project.click();
   await expect(page.getByText("Case study", { exact: true })).toBeVisible();
+  const caseStudyViewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+  const caseStudyScrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(caseStudyScrollWidth).toBeLessThanOrEqual(caseStudyViewportWidth + 1);
 });
 
 test("legal and authentication routes are reachable", async ({ page }) => {

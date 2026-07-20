@@ -4,7 +4,9 @@ import {
   leadDetailsSchema,
   leadSchema,
   profileSchema,
+  projectSchema,
   serviceSchema,
+  testimonialSubmissionSchema,
   usernameSchema,
 } from "./validations";
 
@@ -50,6 +52,36 @@ describe("serviceSchema", () => {
 
   it("rejects absurd delivery times", () => {
     expect(serviceSchema.safeParse({ ...valid, deliveryDays: 999 }).success).toBe(false);
+  });
+});
+
+describe("projectSchema", () => {
+  const valid = {
+    title: "Launch redesign",
+    slug: "launch-redesign",
+    summary: "A complete redesign that improved activation for new customers.",
+    description: "## Result\n\nActivation increased by **24%**.",
+    accentColor: "sage",
+    technologies: ["Next.js"],
+    year: 2026,
+    featured: true,
+    published: true,
+  };
+
+  it("accepts supported case-study accents and rejects arbitrary colors", () => {
+    expect(projectSchema.safeParse(valid).success).toBe(true);
+    expect(projectSchema.safeParse({ ...valid, accentColor: "url(javascript:bad)" }).success).toBe(false);
+  });
+});
+
+describe("testimonialSubmissionSchema", () => {
+  it("accepts client-authored content without publishing controls", () => {
+    expect(testimonialSubmissionSchema.safeParse({
+      authorName: "Jane Cooper",
+      authorRole: "Founder",
+      authorCompany: "Acme",
+      content: "The project shipped early and improved our conversion rate.",
+    }).success).toBe(true);
   });
 });
 

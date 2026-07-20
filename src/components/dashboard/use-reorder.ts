@@ -8,7 +8,8 @@ import { reorderEntities } from "@/server/actions/entities";
 
 export function useReorder<T extends { id: string }>(source: T[], kind: "services" | "projects" | "testimonials") {
   const [items, setItems] = useState(source);
-  const sourceKey = source.map((item) => item.id).join(":");
+  // Refresh local rows when edited data changes, not only when IDs are added or removed.
+  const sourceKey = JSON.stringify(source);
   const [syncedKey, setSyncedKey] = useState(sourceKey);
   const [dragged, setDragged] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();

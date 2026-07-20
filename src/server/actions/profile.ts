@@ -39,6 +39,7 @@ export async function createProfile(input: {
     data: {
       userId: user.id,
       username: parsed.data.username.toLowerCase(),
+      displayName: user.name?.trim() || null,
       headline: parsed.data.headline || null,
       location: parsed.data.location || null,
       availability: parsed.data.availability,
@@ -73,6 +74,8 @@ export async function updateProfile(input: unknown): Promise<ActionResult> {
       data: {
         ...data,
         username,
+        displayName: data.displayName || null,
+        profileLabel: data.profileLabel,
         headline: data.headline || null,
         bio: data.bio || null,
         location: data.location || null,

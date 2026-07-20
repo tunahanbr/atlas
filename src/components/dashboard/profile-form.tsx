@@ -21,6 +21,8 @@ import {
 
 type ProfileData = {
   username: string;
+  displayName: string | null;
+  profileLabel: string;
   headline: string | null;
   bio: string | null;
   location: string | null;
@@ -57,6 +59,8 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
     const fd = new FormData(e.currentTarget);
     const input = {
       username: String(fd.get("username") ?? ""),
+      displayName: String(fd.get("displayName") ?? ""),
+      profileLabel: String(fd.get("profileLabel") ?? ""),
       headline: String(fd.get("headline") ?? ""),
       bio: String(fd.get("bio") ?? ""),
       location: String(fd.get("location") ?? ""),
@@ -90,6 +94,32 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
             <Input id="username" name="username" defaultValue={profile.username} required />
             <p className="text-xs text-muted-foreground">
               Your public URL: atlas.rocks/<strong>{profile.username}</strong>
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="displayName">Display name</Label>
+            <Input
+              id="displayName"
+              name="displayName"
+              defaultValue={profile.displayName ?? ""}
+              placeholder="Your name"
+              maxLength={80}
+            />
+            <p className="text-xs text-muted-foreground">
+              This is the large name shown in your profile introduction.
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="profileLabel">Intro label (optional)</Label>
+            <Input
+              id="profileLabel"
+              name="profileLabel"
+              defaultValue={profile.profileLabel}
+              placeholder="Independent professional"
+              maxLength={60}
+            />
+            <p className="text-xs text-muted-foreground">
+              The small text above your name. Leave it empty to hide it completely.
             </p>
           </div>
           <div className="space-y-1.5">

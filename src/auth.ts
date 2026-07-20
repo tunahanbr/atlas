@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import { cache } from "react";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
@@ -69,7 +70,7 @@ export const legacySignOut = legacyAuth.signOut;
  * Supabase owns the session when configured; the existing Auth.js flow remains
  * available for local development and backwards-compatible self-hosting.
  */
-export async function auth() {
+async function resolveAuth() {
   const { isSupabaseConfigured } = await import("@/lib/supabase/config");
   if (!isSupabaseConfigured()) return legacyAuth.auth();
 
@@ -102,3 +103,7 @@ export async function auth() {
     expires: data.user.created_at,
   };
 }
+
+// Dashboard layouts and pages both need the current user. React's request cache
+// keeps that authentication lookup to one round-trip per navigation.
+export const auth = cache(resolveAuth);
