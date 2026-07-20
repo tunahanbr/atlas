@@ -13,7 +13,10 @@ MIT licensed. Self-hostable. You own your data.
 - **Public profile** — hero, availability badge, services with pricing,
   portfolio with case studies, testimonials, experience, skills, certifications
 - **Lead inbox** — contact form submissions land in a clean inbox; reply
-  directly by email, with optional SMTP notifications and signed webhooks
+  directly by email, manage the sales pipeline, schedule follow-ups and add notes
+- **Privacy-friendly analytics** — daily views, interest and conversion metrics
+  without cookies, IP addresses or visitor profiles
+- **Custom domains** — DNS ownership verification and host-based profile routing
 - **Dashboard** — manage everything from a calm, Linear-inspired interface
 - **SEO-first** — structured data (JSON-LD), Open Graph, sitemap, semantic HTML
 - **Dark mode** — system, light or dark default per profile
@@ -68,6 +71,16 @@ For integrations, set `LEAD_WEBHOOK_URL` and `LEAD_WEBHOOK_SECRET`. Atlas sends
 `lead.created` JSON payloads with an `X-Atlas-Signature: sha256=<hmac>` header.
 Webhook delivery requires HTTPS in production and does not follow redirects.
 
+### Custom domains
+
+Set `CUSTOM_DOMAIN_CNAME` to the public hostname serving your Atlas instance.
+Users add domains under Settings, create the displayed CNAME and TXT records,
+then click Verify. Your reverse proxy must terminate TLS for every connected
+domain and forward the original `Host` header to Atlas.
+
+Analytics are stored as daily aggregate counters only. Atlas does not persist
+visitor IPs, cookies, user agents or raw analytics events.
+
 ## Useful commands
 
 | Command           | Purpose                          |
@@ -103,8 +116,9 @@ prisma/                schema, migrations, seed
 ## Roadmap
 
 - **Now**: profiles, services, portfolio, testimonials, lead inbox
-- **Next**: custom domains, analytics, themes, API + webhooks
-- **Later**: CRM, proposals, contracts, invoicing, client portal, plugins
+- **Now**: profiles, services, portfolio, analytics, custom domains, lead CRM
+- **Next**: proposals, contracts and invoicing
+- **Later**: client portal and plugins
 
 ## Contributing
 

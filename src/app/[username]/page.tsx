@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { getProfileByUsername } from "@/server/queries";
@@ -14,6 +15,7 @@ import { Section } from "@/components/profile/section";
 import { LeadForm } from "@/components/profile/lead-form";
 import { ProfileFooter } from "@/components/profile/profile-footer";
 import { ProfileTheme } from "@/components/profile/profile-theme";
+import { AnalyticsPageView } from "@/components/profile/analytics-tracker";
 
 type Props = { params: Promise<{ username: string }> };
 
@@ -21,6 +23,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
   const profile = await getProfileByUsername(username);
   if (!profile) return { title: "Not found" };
+  const customHost = (await headers()).get("x-atlas-custom-host");
+  const profileUrl = customHost
+    ? `${process.env.NODE_ENV === "production" ? "https" : "http"}://${customHost}`
+    : `/${profile.username}`;
 
   const name = profile.user.name ?? profile.username;
   const title = profile.seoTitle ?? `${name} — ${profile.headline ?? profile.username}`;
@@ -30,12 +36,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: `/${profile.username}` },
+    alternates: { canonical: profileUrl },
     openGraph: {
       title,
       description,
       type: "profile",
-      url: `/${profile.username}`,
+      url: profileUrl,
       images: profile.avatarUrl ? [{ url: profile.avatarUrl }] : undefined,
     },
     twitter: { card: "summary", title, description },
@@ -46,6 +52,11 @@ export default async function ProfilePage({ params }: Props) {
   const { username } = await params;
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
+  const customHost = (await headers()).get("x-atlas-custom-host");
+  const profileBasePath = customHost ? "" : `/${profile.username}`;
+  const profileUrl = customHost
+    ? `${process.env.NODE_ENV === "production" ? "https" : "http"}://${customHost}`
+    : `/${profile.username}`;
 
   const name = profile.user.name ?? profile.username;
   const profileTheme =
@@ -59,7 +70,7 @@ export default async function ProfilePage({ params }: Props) {
       name,
       description: profile.headline ?? undefined,
       image: profile.avatarUrl ?? undefined,
-      url: `/${profile.username}`,
+      url: profileUrl,
       sameAs: profile.socials.map((s) => s.url),
       address: profile.location ?? undefined,
     },
@@ -68,6 +79,11 @@ export default async function ProfilePage({ params }: Props) {
   return (
     <>
       <ProfileTheme defaultTheme={profileTheme} />
+      <AnalyticsPageView
+        username={profile.username}
+        event="PROFILE_VIEW"
+        pageKey={`profile:${profile.username}`}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
@@ -75,8 +91,12 @@ export default async function ProfilePage({ params }: Props) {
       <ProfileNav name={name} />
       <main className="mx-auto w-full max-w-2xl flex-1 px-6">
         <Hero profile={profile} />
-        <Services services={profile.services} />
-        <Projects username={profile.username} projects={profile.projects} />
+        <Services username={profile.username} services={profile.services} />
+        <Projects
+          username={profile.username}
+          basePath={profileBasePath}
+          projects={profile.projects}
+        />
         <Testimonials testimonials={profile.testimonials} />
         <Experience experiences={profile.experiences} />
         <About profile={profile} />

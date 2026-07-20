@@ -129,6 +129,30 @@ export const leadSchema = z.object({
     .max(2000),
 });
 
+export const leadStatusSchema = z.enum([
+  "NEW",
+  "READ",
+  "QUALIFIED",
+  "WON",
+  "LOST",
+  "ARCHIVED",
+]);
+
+export const leadDetailsSchema = z.object({
+  valueCents: z.number().int().min(0).max(100_000_000).nullable(),
+  currency: z.string().trim().length(3).regex(/^[A-Za-z]{3}$/),
+  nextFollowUp: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine((value) => {
+      const parsed = new Date(`${value}T00:00:00.000Z`);
+      return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+    }, "Enter a valid follow-up date")
+    .nullable(),
+});
+
+export const leadNoteSchema = z.string().trim().min(1).max(2000);
+
 export type ProfileInput = z.infer<typeof profileSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;
 export type ProjectInput = z.infer<typeof projectSchema>;

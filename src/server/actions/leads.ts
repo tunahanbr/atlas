@@ -6,6 +6,7 @@ import { after } from "next/server";
 
 import { db } from "@/server/db";
 import { sendLeadNotifications } from "@/server/lead-notifications";
+import { recordContactSubmission } from "@/server/analytics";
 import { leadSchema, type LeadInput } from "@/lib/validations";
 
 const CLIENT_LIMIT_PER_HOUR = 5;
@@ -43,6 +44,7 @@ export async function submitLead(
   const profile = await db.profile.findUnique({
     where: { username: parsed.data.username.toLowerCase() },
     select: {
+      id: true,
       userId: true,
       username: true,
       user: { select: { email: true, name: true } },
@@ -95,11 +97,14 @@ export async function submitLead(
   // Next.js keeps the request alive for this work without delaying the success
   // response. Delivery failures are logged but never lose the stored lead.
   after(async () => {
-    await sendLeadNotifications({
-      lead,
-      owner: profile.user,
-      profile: { username: profile.username },
-    });
+    await Promise.all([
+      recordContactSubmission(profile.id),
+      sendLeadNotifications({
+        lead,
+        owner: profile.user,
+        profile: { username: profile.username },
+      }),
+    ]);
   });
 
   return { status: "success" };

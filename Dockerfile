@@ -27,18 +27,18 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0
 
 RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nextjs
+  && adduser --system --uid 1001 --ingroup nodejs nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Migrations are applied by the entrypoint on container start.
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.pnpm ./node_modules/.pnpm
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+# Preserve pnpm's symlink graph for the Prisma migration CLI. Copying only the
+# package directories breaks transitive module resolution inside the container.
+COPY --from=builder /app/node_modules ./node_modules
+COPY --chown=nextjs:nodejs --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh
 
 USER nextjs
 EXPOSE 3000

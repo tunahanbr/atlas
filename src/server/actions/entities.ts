@@ -12,6 +12,9 @@ import {
   experienceSchema,
   certificationSchema,
   skillSchema,
+  leadDetailsSchema,
+  leadNoteSchema,
+  leadStatusSchema,
 } from "@/lib/validations";
 import type { ActionResult } from "./profile";
 
@@ -231,11 +234,61 @@ export async function deleteCertification(id: string): Promise<ActionResult> {
 
 export async function updateLeadStatus(
   id: string,
-  status: "NEW" | "READ" | "ARCHIVED",
+  status: "NEW" | "READ" | "QUALIFIED" | "WON" | "LOST" | "ARCHIVED",
 ): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  await db.lead.update({ where: { id, userId: session.user.id }, data: { status } });
+  const parsed = leadStatusSchema.safeParse(status);
+  if (!parsed.success) return { ok: false, error: "Invalid lead status" };
+  await db.lead.update({ where: { id, userId: session.user.id }, data: { status: parsed.data } });
+  revalidatePath("/app/leads");
+  revalidatePath("/app");
+  return { ok: true };
+}
+
+export async function updateLeadDetails(id: string, input: unknown): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  const parsed = leadDetailsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
+
+  await db.lead.update({
+    where: { id, userId: session.user.id },
+    data: {
+      valueCents: parsed.data.valueCents,
+      currency: parsed.data.currency.toUpperCase(),
+      nextFollowUp: parsed.data.nextFollowUp
+        ? new Date(`${parsed.data.nextFollowUp}T12:00:00.000Z`)
+        : null,
+    },
+  });
+  revalidatePath("/app/leads");
+  return { ok: true };
+}
+
+export async function addLeadNote(leadId: string, body: string): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  const parsed = leadNoteSchema.safeParse(body);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message };
+
+  const lead = await db.lead.findUnique({
+    where: { id: leadId, userId: session.user.id },
+    select: { id: true },
+  });
+  if (!lead) return { ok: false, error: "Lead not found" };
+  await db.leadNote.create({ data: { leadId: lead.id, body: parsed.data } });
+  revalidatePath("/app/leads");
+  return { ok: true };
+}
+
+export async function deleteLeadNote(noteId: string): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  const result = await db.leadNote.deleteMany({
+    where: { id: noteId, lead: { userId: session.user.id } },
+  });
+  if (!result.count) return { ok: false, error: "Note not found" };
   revalidatePath("/app/leads");
   return { ok: true };
 }

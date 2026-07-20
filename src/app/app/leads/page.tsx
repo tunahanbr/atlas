@@ -13,14 +13,15 @@ export default async function LeadsPage() {
 
   const leads = await db.lead.findMany({
     where: { userId: session.user.id },
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    orderBy: { createdAt: "desc" },
+    include: { notes: { orderBy: { createdAt: "desc" } } },
   });
 
   return (
     <>
       <PageHeader
         title="Leads"
-        description="Inquiries from your profile's contact form. Reply directly by email — no middleman."
+        description="Qualify inquiries, schedule follow-ups and keep the full client context in one place."
       />
       <LeadsInbox leads={leads} />
     </>

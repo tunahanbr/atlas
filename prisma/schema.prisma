@@ -98,6 +98,48 @@ model Profile {
   skills         Skill[]
   certifications Certification[]
   socials        SocialLink[]
+  analytics      AnalyticsDaily[]
+  domains        CustomDomain[]
+}
+
+// Privacy-friendly daily aggregates. Atlas never stores visitor identifiers,
+// IP addresses, cookies or raw analytics events.
+model AnalyticsDaily {
+  id                 String   @id @default(cuid())
+  profileId          String
+  date               DateTime @db.Date
+  profileViews       Int      @default(0)
+  projectViews       Int      @default(0)
+  projectClicks      Int      @default(0)
+  serviceClicks      Int      @default(0)
+  contactSubmissions Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+  @@index([profileId, date])
+}
+
+enum CustomDomainStatus {
+  PENDING
+  VERIFIED
+}
+
+model CustomDomain {
+  id                String             @id @default(cuid())
+  profileId         String
+  hostname          String             @unique
+  verificationToken String             @unique
+  status            CustomDomainStatus @default(PENDING)
+  verifiedAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, status])
 }
 
 enum PriceType {
@@ -215,22 +257,42 @@ model SocialLink {
 enum LeadStatus {
   NEW
   READ
+  QUALIFIED
+  WON
+  LOST
   ARCHIVED
 }
 
 model Lead {
-  id        String     @id @default(cuid())
-  userId    String
-  name      String
-  email     String
-  budget    String?
-  message   String     @db.Text
-  status    LeadStatus @default(NEW)
-  createdAt DateTime   @default(now())
+  id           String     @id @default(cuid())
+  userId       String
+  name         String
+  email        String
+  budget       String?
+  message      String     @db.Text
+  status       LeadStatus @default(NEW)
+  valueCents   Int?
+  currency     String     @default("EUR")
+  nextFollowUp DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes LeadNote[]
 
   @@index([userId, status])
+  @@index([userId, nextFollowUp])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt])
 }
 
 // Atomic, database-backed rate-limit buckets for the public lead form. Keys are

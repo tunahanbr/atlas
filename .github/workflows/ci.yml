@@ -56,3 +56,5 @@ jobs:
       - run: pnpm test
       - run: pnpm test:integration
       - run: pnpm build
+      - name: Build production container
+        run: docker build --tag atlas-ci:${{ github.sha }} .

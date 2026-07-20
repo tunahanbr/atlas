@@ -5,6 +5,8 @@ import { db } from "@/server/db";
 import { getLeadNotificationStatus } from "@/server/lead-notifications";
 import { PageHeader } from "@/components/dashboard/shared";
 import { SeoForm } from "@/components/dashboard/seo-form";
+import { CustomDomains } from "@/components/dashboard/custom-domains";
+import { platformHostname } from "@/lib/domains";
 
 export const metadata = { title: "Settings" };
 
@@ -14,7 +16,13 @@ export default async function SettingsPage() {
 
   const profile = await db.profile.findUnique({
     where: { userId: session.user.id },
-    select: { seoTitle: true, seoDescription: true, username: true, createdAt: true },
+    select: {
+      seoTitle: true,
+      seoDescription: true,
+      username: true,
+      createdAt: true,
+      domains: { orderBy: { createdAt: "asc" } },
+    },
   });
   if (!profile) redirect("/setup");
   const notificationStatus = getLeadNotificationStatus();
@@ -25,6 +33,11 @@ export default async function SettingsPage() {
 
       <div className="space-y-6">
         <SeoForm seoTitle={profile.seoTitle} seoDescription={profile.seoDescription} />
+
+        <CustomDomains
+          domains={profile.domains}
+          cnameTarget={process.env.CUSTOM_DOMAIN_CNAME?.trim() || platformHostname()}
+        />
 
         <section className="rounded-xl border bg-card p-6">
           <h2 className="font-medium tracking-tight">Lead notifications</h2>
@@ -54,7 +67,9 @@ export default async function SettingsPage() {
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Profile URL</dt>
-              <dd className="font-medium">atlas.rocks/{profile.username}</dd>
+              <dd className="font-medium">
+                {(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/^https?:\/\//, "").replace(/\/$/, "")}/{profile.username}
+              </dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Member since</dt>
@@ -68,13 +83,6 @@ export default async function SettingsPage() {
           </dl>
         </section>
 
-        <section className="rounded-xl border border-dashed p-6">
-          <h2 className="font-medium tracking-tight text-muted-foreground">Custom domain</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Point your own domain at this profile. Coming in the next release — the
-            routing layer already supports it.
-          </p>
-        </section>
       </div>
     </>
   );

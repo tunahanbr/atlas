@@ -1,11 +1,18 @@
-import { Clock } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
 
 import type { PublicProfile } from "@/server/queries";
 import { formatDelivery, formatPrice } from "@/lib/format";
 import { Section } from "./section";
 import { Reveal } from "./reveal";
+import { AnalyticsLink } from "./analytics-tracker";
 
-export function Services({ services }: { services: PublicProfile["services"] }) {
+export function Services({
+  username,
+  services,
+}: {
+  username: string;
+  services: PublicProfile["services"];
+}) {
   if (services.length === 0) return null;
 
   return (
@@ -50,6 +57,15 @@ export function Services({ services }: { services: PublicProfile["services"] }) 
                   ))}
                 </ul>
               ) : null}
+              <AnalyticsLink
+                username={username}
+                event="SERVICE_CLICK"
+                href="#contact"
+                className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
+              >
+                Discuss this service
+                <ArrowRight className="size-3.5" />
+              </AnalyticsLink>
             </li>
           </Reveal>
         ))}

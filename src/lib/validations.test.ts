@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { leadSchema, profileSchema, serviceSchema, usernameSchema } from "./validations";
+import {
+  leadDetailsSchema,
+  leadSchema,
+  profileSchema,
+  serviceSchema,
+  usernameSchema,
+} from "./validations";
 
 describe("usernameSchema", () => {
   it("accepts valid usernames", () => {
@@ -66,6 +72,25 @@ describe("leadSchema", () => {
 
   it("rejects too-short messages", () => {
     expect(leadSchema.safeParse({ ...valid, message: "hi" }).success).toBe(false);
+  });
+});
+
+describe("leadDetailsSchema", () => {
+  const valid = {
+    valueCents: 250000,
+    currency: "EUR",
+    nextFollowUp: "2026-08-01",
+  };
+
+  it("accepts valid CRM details", () => {
+    expect(leadDetailsSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("rejects impossible dates and malformed currencies", () => {
+    expect(leadDetailsSchema.safeParse({ ...valid, nextFollowUp: "2026-02-31" }).success).toBe(
+      false,
+    );
+    expect(leadDetailsSchema.safeParse({ ...valid, currency: "€€€" }).success).toBe(false);
   });
 });
 

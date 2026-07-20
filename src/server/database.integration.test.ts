@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { getAnalyticsSummary, recordAnalyticsEvent } from "./analytics";
 
 const db = new PrismaClient();
 const runId = randomUUID();
@@ -12,6 +13,8 @@ let firstProfileId: string;
 let secondProfileId: string;
 let firstServiceId: string;
 let firstLeadId: string;
+let firstDomainId: string;
+let firstNoteId: string;
 
 beforeAll(async () => {
   const firstUser = await db.user.create({
@@ -55,6 +58,19 @@ beforeAll(async () => {
 
   firstServiceId = service.id;
   firstLeadId = lead.id;
+
+  const [domain, note] = await Promise.all([
+    db.customDomain.create({
+      data: {
+        profileId: firstProfileId,
+        hostname: `integration-${runId.slice(0, 8)}.example.com`,
+        verificationToken: randomUUID(),
+      },
+    }),
+    db.leadNote.create({ data: { leadId: firstLeadId, body: "Private CRM note" } }),
+  ]);
+  firstDomainId = domain.id;
+  firstNoteId = note.id;
 });
 
 afterAll(async () => {
@@ -89,5 +105,34 @@ describe("tenant isolation predicates", () => {
       status: "NEW",
       userId: firstUserId,
     });
+  });
+
+  it("cannot update another profile's custom domain", async () => {
+    await expect(
+      db.customDomain.update({
+        where: { id: firstDomainId, profileId: secondProfileId },
+        data: { status: "VERIFIED" },
+      }),
+    ).rejects.toMatchObject({ code: "P2025" });
+  });
+
+  it("keeps CRM notes inside the owning account", async () => {
+    const result = await db.leadNote.deleteMany({
+      where: { id: firstNoteId, lead: { userId: secondUserId } },
+    });
+    expect(result.count).toBe(0);
+    await expect(db.leadNote.findUnique({ where: { id: firstNoteId } })).resolves.toMatchObject({
+      body: "Private CRM note",
+    });
+  });
+
+  it("stores analytics as profile-scoped daily aggregates", async () => {
+    await recordAnalyticsEvent(firstProfileId, "PROFILE_VIEW");
+    await recordAnalyticsEvent(firstProfileId, "PROFILE_VIEW");
+    await recordAnalyticsEvent(firstProfileId, "PROJECT_CLICK");
+
+    const analytics = await getAnalyticsSummary(firstProfileId, 7);
+    expect(analytics.totals).toMatchObject({ profileViews: 2, projectClicks: 1 });
+    expect(analytics.series).toHaveLength(7);
   });
 });

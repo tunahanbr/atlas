@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Briefcase,
+  ChartNoAxesCombined,
   ExternalLink,
   FolderKanban,
   Inbox,
@@ -33,6 +34,7 @@ const NAV = [
     group: "Main",
     items: [
       { href: "/app", label: "Overview", icon: LayoutDashboard },
+      { href: "/app/analytics", label: "Analytics", icon: ChartNoAxesCombined },
       { href: "/app/leads", label: "Leads", icon: Inbox, badge: true },
     ],
   },
